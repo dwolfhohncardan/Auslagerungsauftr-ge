@@ -27,56 +27,27 @@
             }
         }
     </script>
-    <!-- Google Fonts (Inter) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- JsBarcode CDN für dynamische Barcode-Generierung -->
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-
-        /* Dynamische CSS-Variablen für das TV-Tuning */
+        body { font-family: 'Inter', sans-serif; }
         :root {
             --tv-card-height: 60px;
             --tv-font-size: 16px;
             --tv-gap: 8px;
         }
-
-        /* Anwendung der dynamischen Werte auf die TV-Karten */
-        .tv-card-row {
-            height: var(--tv-card-height) !important;
-        }
-        .tv-card-text-lg {
-            font-size: var(--tv-font-size) !important;
-            line-height: 1.1 !important;
-        }
-        .tv-card-text-sm {
-            font-size: calc(var(--tv-font-size) * 0.75) !important;
-        }
-        .tv-card-text-xs {
-            font-size: calc(var(--tv-font-size) * 0.55) !important;
-        }
-        #tv-grid {
-            gap: var(--tv-gap) !important;
-        }
-
-        .glow-red {
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
-        }
-        .dark .glow-red {
-            box-shadow: 0 0 25px rgba(239, 68, 68, 0.4);
-        }
-        .glow-amber {
-            box-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
-        }
-        .dark .glow-amber {
-            box-shadow: 0 0 25px rgba(245, 158, 11, 0.3);
-        }
+        .tv-card-row { height: var(--tv-card-height) !important; }
+        .tv-card-text-lg { font-size: var(--tv-font-size) !important; line-height: 1.1 !important; }
+        .tv-card-text-sm { font-size: calc(var(--tv-font-size) * 0.75) !important; }
+        .tv-card-text-xs { font-size: calc(var(--tv-font-size) * 0.55) !important; }
+        #tv-grid { gap: var(--tv-gap) !important; }
+        .glow-red { box-shadow: 0 0 20px rgba(239, 68, 68, 0.2); }
+        .dark .glow-red { box-shadow: 0 0 25px rgba(239, 68, 68, 0.4); }
+        .glow-amber { box-shadow: 0 0 20px rgba(245, 158, 11, 0.15); }
+        .dark .glow-amber { box-shadow: 0 0 25px rgba(245, 158, 11, 0.3); }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-black dark:text-zinc-100 min-h-screen flex flex-col transition-colors duration-200">
@@ -95,17 +66,16 @@
             </div>
 
             <div class="flex items-center space-x-2 sm:space-x-4">
-                <!-- Segmented View Mode Controller (Bediener, TV, Tablet) -->
                 <div class="flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-lg border border-slate-200 dark:border-zinc-800">
-                    <button id="btn-mode-operator" class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center space-x-1 bg-white dark:bg-zinc-950 shadow-sm text-brand-500">
+                    <button id="btn-mode-operator" class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center space-x-1">
                         <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                         <span class="hidden md:inline">Bediener</span>
                     </button>
-                    <button id="btn-mode-tv" class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center space-x-1 text-slate-500 dark:text-zinc-400">
+                    <button id="btn-mode-tv" class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center space-x-1 text-slate-500">
                         <i data-lucide="monitor" class="w-3.5 h-3.5"></i>
                         <span class="hidden md:inline">TV</span>
                     </button>
-                    <button id="btn-mode-tablet" class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center space-x-1 text-slate-500 dark:text-zinc-400">
+                    <button id="btn-mode-tablet" class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center space-x-1 text-slate-500">
                         <i data-lucide="tablet" class="w-3.5 h-3.5"></i>
                         <span class="hidden md:inline">Tablet</span>
                     </button>
@@ -113,16 +83,12 @@
 
                 <span class="h-6 w-[1px] bg-slate-200 dark:bg-zinc-800"></span>
 
-                <!-- System Time -->
                 <div class="hidden md:flex items-center space-x-2 text-sm text-slate-500 dark:text-zinc-400 font-mono">
                     <i data-lucide="clock" class="w-4 h-4"></i>
                     <span id="live-clock">--:--:--</span>
                 </div>
                 
-                <span class="h-6 w-[1px] bg-slate-200 dark:bg-zinc-800 hidden md:block"></span>
-
-                <!-- Theme Toggle Button -->
-                <button id="theme-toggle" class="p-2 rounded-lg border border-slate-200 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-900 transition-colors" aria-label="Theme umschalten">
+                <button id="theme-toggle" class="p-2 rounded-lg border border-slate-200 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-900 transition-colors">
                     <i data-lucide="sun" class="w-5 h-5 block dark:hidden text-amber-500"></i>
                     <i data-lucide="moon" class="w-5 h-5 hidden dark:block text-blue-400"></i>
                 </button>
@@ -130,11 +96,9 @@
         </div>
     </header>
 
-    <!-- 1. BEDIENER-ANSICHT (Standard-Layout) -->
+    <!-- BEDIENER-ANSICHT -->
     <div id="operator-view" class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 w-full">
-        
-        <!-- KPI Row -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 gap-4" aria-label="Key Performance Indicators">
+        <section class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="bg-white dark:bg-zinc-950 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 flex items-center justify-between shadow-sm">
                 <div>
                     <p class="text-sm font-medium text-slate-500 dark:text-zinc-400">Offene Aufträge</p>
@@ -146,8 +110,8 @@
             </div>
             <div class="bg-white dark:bg-zinc-950 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 flex items-center justify-between shadow-sm">
                 <div>
-                    <p class="text-sm font-medium text-slate-500 dark:text-zinc-400">Dringend</p>
-                    <p id="kpi-urgent" class="text-2xl font-bold mt-1 text-red-500 dark:text-red-400">0</p>
+                    <p class="text-sm font-medium text-slate-500 dark:text-zinc-400">Dringend / Überfällig</p>
+                    <p id="kpi-urgent" class="text-2xl font-bold mt-1 text-red-500">0</p>
                 </div>
                 <div class="p-3 bg-red-50 dark:bg-zinc-900 rounded-lg text-red-500">
                     <i data-lucide="alert-triangle" class="w-6 h-6"></i>
@@ -155,252 +119,133 @@
             </div>
         </section>
 
-        <!-- Main Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left: Formular -->
-            <section class="lg:col-span-1 space-y-6">
+            <section class="lg:col-span-1">
                 <div class="bg-white dark:bg-zinc-950 p-6 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm">
-                    <div class="flex items-center space-x-2.5 mb-6">
-                        <i data-lucide="plus-circle" class="w-5 h-5 text-brand-500"></i>
-                        <h2 class="text-lg font-bold">Auslagerungsauftrag erfassen</h2>
-                    </div>
-
+                    <h2 class="text-lg font-bold mb-6 flex items-center gap-2"><i data-lucide="plus-circle" class="text-brand-500"></i> Erfassen</h2>
                     <form id="auftrag-form" class="space-y-4">
                         <div>
-                            <label for="artikelnummer" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-1">Artikelnummer</label>
-                            <input type="text" id="artikelnummer" required placeholder="z.B. ART-100293" 
-                                class="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-mono transition-shadow">
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">ARTIKELNUMMER</label>
+                            <input type="text" id="artikelnummer" required class="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-sm font-mono">
                         </div>
-
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label for="lagerort" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-1">Lagerort</label>
-                                <input type="text" id="lagerort" required placeholder="A-04-12" 
-                                    class="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-mono uppercase">
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">LAGERORT</label>
+                                <input type="text" id="lagerort" required class="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-sm uppercase">
                             </div>
                             <div>
-                                <label for="zielort" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-1">Zielort</label>
-                                <input type="text" id="zielort" required placeholder="WA-Nord-1" 
-                                    class="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-mono uppercase">
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">ZIELORT</label>
+                                <input type="text" id="zielort" required class="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-sm uppercase">
                             </div>
                         </div>
-
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label for="uhrzeit" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-1">Uhrzeit</label>
-                                <input type="time" id="uhrzeit" required 
-                                    class="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-mono">
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">UHRZEIT</label>
+                                <input type="time" id="uhrzeit" required class="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-sm">
                             </div>
                             <div>
-                                <label for="schicht" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-1">Schicht</label>
-                                <select id="schicht" required 
-                                    class="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
-                                    <option value="Frühschicht">Frühschicht</option>
-                                    <option value="Spätschicht">Spätschicht</option>
-                                    <option value="Nachtschicht">Nachtschicht</option>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">SCHICHT</label>
+                                <select id="schicht" class="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-sm">
+                                    <option>Frühschicht</option>
+                                    <option>Spätschicht</option>
+                                    <option>Nachtschicht</option>
                                 </select>
                             </div>
                         </div>
-
-                        <div class="pt-2">
-                            <label class="relative flex items-center p-3 rounded-lg border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-900 cursor-pointer select-none transition-colors">
-                                <input type="checkbox" id="dringlich" class="sr-only peer">
-                                <div class="w-5 h-5 border-2 border-slate-300 dark:border-zinc-700 rounded flex items-center justify-center peer-checked:bg-red-500 peer-checked:border-red-500 transition-colors">
-                                    <i data-lucide="check" class="w-3.5 h-3.5 text-white stroke-[3]"></i>
-                                </div>
-                                <div class="ml-3">
-                                    <span class="text-sm font-medium text-slate-700 dark:text-zinc-300">Dringenden Transport anfordern</span>
-                                </div>
-                            </label>
-                        </div>
-
-                        <button type="submit" class="w-full mt-2 py-2.5 px-4 bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-medium rounded-lg text-sm transition-colors flex items-center justify-center space-x-2 focus:outline-none">
-                            <i data-lucide="plus" class="w-4 h-4"></i>
-                            <span>Auftrag einreihen</span>
-                        </button>
+                        <label class="flex items-center p-3 rounded-lg border border-slate-200 dark:border-zinc-800 cursor-pointer">
+                            <input type="checkbox" id="dringlich" class="mr-3 w-4 h-4 accent-red-500">
+                            <span class="text-sm font-medium">Dringender Transport</span>
+                        </label>
+                        <button type="submit" class="w-full py-2.5 bg-brand-500 text-white font-bold rounded-lg hover:bg-brand-600 transition-colors">Auftrag einreihen</button>
                     </form>
                 </div>
             </section>
 
-            <!-- Right: Tabellenliste -->
-            <section class="lg:col-span-2 space-y-6">
+            <section class="lg:col-span-2">
                 <div class="bg-white dark:bg-zinc-950 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden">
-                    <div class="px-6 py-4 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
-                        <div class="flex items-center space-x-2.5">
-                            <i data-lucide="list" class="w-5 h-5 text-brand-500"></i>
-                            <h2 class="text-lg font-bold">Aktive Liste (Priorisiert)</h2>
-                        </div>
-                        <span id="auftrag-count" class="text-xs font-semibold px-2.5 py-0.5 bg-slate-100 dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 rounded-full">0 Einträge</span>
+                    <div class="px-6 py-4 border-b border-slate-200 dark:border-zinc-800 flex justify-between items-center">
+                        <h2 class="text-lg font-bold">Aktive Liste</h2>
+                        <span id="auftrag-count" class="text-xs bg-slate-100 dark:bg-zinc-900 px-2 py-1 rounded">0 Einträge</span>
                     </div>
-
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-slate-50 dark:bg-zinc-950 border-b border-slate-200 dark:border-zinc-800">
-                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-500">Artikelnummer</th>
-                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-500">Lagerort ➔ Zielort</th>
-                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-500">Zeit / Schicht</th>
-                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-500">Status / Prio</th>
-                                    <th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-500 text-right">Aktion</th>
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-slate-50 dark:bg-zinc-900/50">
+                                <tr>
+                                    <th class="px-6 py-3">Artikel</th>
+                                    <th class="px-6 py-3">Route</th>
+                                    <th class="px-6 py-3">Zeit</th>
+                                    <th class="px-6 py-3">Status</th>
+                                    <th class="px-6 py-3 text-right">Aktion</th>
                                 </tr>
                             </thead>
-                            <tbody id="auftrag-table-body" class="divide-y divide-slate-100 dark:divide-zinc-800 text-sm">
-                                <!-- Dynamische Zeilen -->
-                            </tbody>
+                            <tbody id="auftrag-table-body" class="divide-y divide-slate-100 dark:divide-zinc-800"></tbody>
                         </table>
-                    </div>
-                    <div id="empty-state" class="p-12 text-center flex flex-col items-center justify-center hidden">
-                        <i data-lucide="inbox" class="w-12 h-12 text-slate-300 dark:text-zinc-700 mb-3"></i>
-                        <p class="font-medium text-slate-600 dark:text-zinc-400">Keine Auslagerungen vorhanden</p>
+                        <div id="empty-state" class="p-12 text-center hidden">
+                            <i data-lucide="inbox" class="w-12 h-12 mx-auto text-slate-300 mb-3"></i>
+                            <p>Keine Aufträge vorhanden</p>
+                        </div>
                     </div>
                 </div>
             </section>
         </div>
     </div>
 
-
-    <!-- 2. TV-ANSICHT (Vollbild-Kachel-Grid mit Kalibrierung & Status-Check) -->
-    <div id="tv-view" class="hidden flex-grow px-6 py-6 flex flex-col space-y-4 w-full max-w-[1600px] mx-auto">
-        <!-- TV Header / KPI Bar -->
-        <div class="flex flex-col space-y-3 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 p-4 rounded-xl shadow-sm">
-            <div class="flex items-center justify-between">
-                <!-- Dynamischer Online/Offline Status -->
-                <div id="connection-status" class="flex items-center space-x-3 transition-all duration-300">
-                    <span class="flex h-3.5 w-3.5 relative">
-                        <span id="status-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span id="status-dot" class="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
-                    </span>
-                    <span id="status-text" class="font-bold text-sm uppercase tracking-wider text-emerald-500">System Online</span>
-                </div>
-                
-                <div class="flex items-center space-x-6">
-                    <div class="text-center">
-                        <span class="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase">Aufträge Gesamt</span>
-                        <p id="tv-kpi-total" class="text-2xl font-black text-brand-500">0</p>
-                    </div>
-                    <div class="text-center">
-                        <span class="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase">Kritisch (Prio 1 & 2)</span>
-                        <p id="tv-kpi-urgent" class="text-2xl font-black text-red-500 animate-pulse-fast">0</p>
-                    </div>
-                    <div class="text-center border-l border-slate-200 dark:border-zinc-800 pl-6 hidden sm:block">
-                        <span class="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase">Hallenzeit</span>
-                        <p id="tv-clock" class="text-2xl font-mono font-bold text-slate-800 dark:text-zinc-100">00:00:00</p>
-                    </div>
-                    
-                    <span class="h-8 w-[1px] bg-slate-200 dark:bg-zinc-800"></span>
-
-                    <!-- Settings Button -->
-                    <button id="tv-settings-toggle" class="p-2 rounded-lg border border-slate-200 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-900 transition-colors text-slate-500 dark:text-zinc-400 flex items-center space-x-1.5 text-xs font-medium" title="Layout anpassen">
-                        <i data-lucide="settings" class="w-4 h-4"></i>
-                        <span>Layout justieren</span>
-                    </button>
-                </div>
+    <!-- TV-ANSICHT -->
+    <div id="tv-view" class="hidden flex-grow px-6 py-6 flex flex-col space-y-4 w-full">
+        <div class="bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 p-4 rounded-xl flex items-center justify-between">
+            <div id="connection-status" class="flex items-center space-x-3">
+                <span id="status-dot" class="w-3.5 h-3.5 rounded-full bg-emerald-500"></span>
+                <span id="status-text" class="font-bold text-sm uppercase tracking-wider text-emerald-500">System Online</span>
             </div>
-
-            <!-- Ausklappbares Einstellungsmenü für die TV-Skalierung -->
-            <div id="tv-settings-panel" class="hidden border-t border-slate-100 dark:border-zinc-900 pt-4 mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-                <!-- Regler: Zeilenhöhe -->
-                <div class="space-y-1.5">
-                    <div class="flex justify-between">
-                        <label for="input-height" class="font-semibold text-slate-500 dark:text-zinc-400">Zeilenhöhe</label>
-                        <span id="val-height" class="font-mono font-bold text-brand-500">60px</span>
-                    </div>
-                    <input type="range" id="input-height" min="45" max="120" value="60" class="w-full accent-brand-500 bg-slate-100 dark:bg-zinc-900 h-1 rounded-lg appearance-none cursor-pointer">
-                </div>
-
-                <!-- Regler: Schriftgröße -->
-                <div class="space-y-1.5">
-                    <div class="flex justify-between">
-                        <label for="input-font" class="font-semibold text-slate-500 dark:text-zinc-400">Schriftgröße</label>
-                        <span id="val-font" class="font-mono font-bold text-brand-500">16px</span>
-                    </div>
-                    <input type="range" id="input-font" min="12" max="26" value="16" class="w-full accent-brand-500 bg-slate-100 dark:bg-zinc-900 h-1 rounded-lg appearance-none cursor-pointer">
-                </div>
-
-                <!-- Regler: Abstände (Gap) -->
-                <div class="space-y-1.5">
-                    <div class="flex justify-between">
-                        <label for="input-gap" class="font-semibold text-slate-500 dark:text-zinc-400">Kachelabstand</label>
-                        <span id="val-gap" class="font-mono font-bold text-brand-500">8px</span>
-                    </div>
-                    <input type="range" id="input-gap" min="4" max="32" value="8" class="w-full accent-brand-500 bg-slate-100 dark:bg-zinc-900 h-1 rounded-lg appearance-none cursor-pointer">
-                </div>
-
-                <!-- Auswahl: Spaltenanzahl -->
-                <div class="space-y-1.5">
-                    <label for="input-columns" class="block font-semibold text-slate-500 dark:text-zinc-400">Spalten-Format</label>
-                    <select id="input-columns" class="w-full px-2.5 py-1 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-brand-500">
-                        <option value="auto">Automatisch (Optimal)</option>
-                        <option value="1">1 Spalte</option>
-                        <option value="2">2 Spalten</option>
-                        <option value="3">3 Spalten</option>
-                        <option value="4">4 Spalten</option>
-                    </select>
-                </div>
+            <div class="flex items-center space-x-8">
+                <div class="text-center"><span class="text-[10px] text-slate-400 uppercase font-bold">Gesamt</span><p id="tv-kpi-total" class="text-2xl font-black text-brand-500">0</p></div>
+                <div class="text-center"><span class="text-[10px] text-slate-400 uppercase font-bold">Kritisch</span><p id="tv-kpi-urgent" class="text-2xl font-black text-red-500">0</p></div>
+                <div class="text-center border-l pl-8"><p id="tv-clock" class="text-2xl font-mono font-bold">00:00:00</p></div>
+                <button id="tv-settings-toggle" class="p-2 border rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-900"><i data-lucide="settings" class="w-4 h-4"></i></button>
             </div>
         </div>
 
-        <!-- TV-Grid: Dynamisch skaliert per CSS Variablen -->
-        <div id="tv-grid" class="grid flex-grow auto-rows-max">
-            <!-- Dynamisch generierte Kompakt-Kacheln -->
+        <div id="tv-settings-panel" class="hidden bg-white dark:bg-zinc-950 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 grid grid-cols-4 gap-4">
+            <div class="space-y-1"><label class="text-xs font-bold text-slate-500">Höhe: <span id="val-height">60px</span></label><input type="range" id="input-height" min="45" max="120" value="60" class="w-full"></div>
+            <div class="space-y-1"><label class="text-xs font-bold text-slate-500">Text: <span id="val-font">16px</span></label><input type="range" id="input-font" min="12" max="26" value="16" class="w-full"></div>
+            <div class="space-y-1"><label class="text-xs font-bold text-slate-500">Abstand: <span id="val-gap">8px</span></label><input type="range" id="input-gap" min="4" max="32" value="8" class="w-full"></div>
+            <div class="space-y-1"><label class="text-xs font-bold text-slate-500">Spalten</label><select id="input-columns" class="w-full text-xs p-1 bg-transparent border rounded"><option value="auto">Auto</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
         </div>
 
-        <!-- TV Empty State (Bereinigt) -->
-        <div id="tv-empty-state" class="hidden flex-grow flex-col items-center justify-center text-center p-20 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl">
-            <i data-lucide="check-circle" class="w-20 h-20 text-emerald-500 mb-4"></i>
-            <h3 class="text-3xl font-bold">Keine offenen Auslagerungen</h3>
-        </div>
-    </div>
-
-
-    <!-- 3. TABLET-ANSICHT (Optimiertes Riegel-Design mit Barcodes für Lenovo Tab M10) -->
-    <div id="tablet-view" class="hidden flex-grow px-4 py-4 flex flex-col space-y-4 w-full max-w-[1400px] mx-auto">
-        <!-- Tablet Header Info -->
-        <div class="flex items-center justify-between bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 p-4 rounded-xl shadow-sm">
-            <div class="flex items-center space-x-2">
-                <i data-lucide="tablet" class="w-5 h-5 text-brand-500"></i>
-                <h2 class="font-bold text-sm tracking-tight uppercase dark:text-zinc-300">Scanner-Terminal (Lenovo M10)</h2>
-            </div>
-            <!-- Live Time for Tablet -->
-            <div class="flex items-center space-x-1 text-xs font-mono text-slate-500 dark:text-zinc-400">
-                <i data-lucide="clock" class="w-3.5 h-3.5"></i>
-                <span class="tablet-clock">--:--:--</span>
-            </div>
-        </div>
-
-        <!-- Tablet-Grid: Responsiv 2 Spalten im Querformat, 1 Spalte im Hochformat -->
-        <div id="tablet-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow auto-rows-max">
-            <!-- Dynamisch generierte Barcode-Kacheln -->
-        </div>
-
-        <!-- Tablet Empty State -->
-        <div id="tablet-empty-state" class="hidden flex-grow flex-col items-center justify-center text-center p-16 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl">
+        <div id="tv-grid" class="grid flex-grow auto-rows-max"></div>
+        <div id="tv-empty-state" class="hidden flex-grow flex flex-col items-center justify-center bg-white dark:bg-zinc-950 rounded-2xl border">
             <i data-lucide="check-circle" class="w-16 h-16 text-emerald-500 mb-4"></i>
-            <h3 class="text-2xl font-bold">Keine ausstehenden Scan-Aufträge</h3>
+            <h3 class="text-2xl font-bold">Alle Aufträge erledigt</h3>
         </div>
     </div>
 
+    <!-- TABLET-ANSICHT -->
+    <div id="tablet-view" class="hidden flex-grow px-4 py-4 flex flex-col space-y-4 w-full">
+        <div class="bg-white dark:bg-zinc-950 border p-4 rounded-xl flex justify-between items-center">
+            <h2 class="font-bold uppercase text-sm flex items-center gap-2"><i data-lucide="tablet" class="text-brand-500"></i> Scanner-Terminal</h2>
+            <div class="tablet-clock font-mono text-xs text-slate-500">--:--:--</div>
+        </div>
+        <div id="tablet-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow auto-rows-max"></div>
+        <div id="tablet-empty-state" class="hidden flex-grow flex flex-col items-center justify-center p-16 bg-white dark:bg-zinc-950 border rounded-2xl">
+            <i data-lucide="check-circle" class="w-12 h-12 text-emerald-500 mb-2"></i>
+            <p class="font-bold">Keine Scan-Aufträge</p>
+        </div>
+    </div>
 
-    <!-- Footer -->
-    <footer id="dashboard-footer" class="border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-black py-4 transition-colors duration-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-zinc-500 space-y-2 sm:space-y-0">
-            <div>&copy; 2026 IntraLog-Systeme. Alle Rechte vorbehalten.</div>
-            <div class="font-mono">Code-Version: <span class="text-brand-500 dark:text-brand-400 font-semibold">v1.8.2</span></div>
+    <footer id="dashboard-footer" class="border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-black py-4">
+        <div class="max-w-7xl mx-auto px-4 flex justify-between text-[10px] text-slate-500 font-mono">
+            <div>&copy; 2026 IntraLog-Systeme</div>
+            <div>Build: <span class="text-brand-500">v1.8.2-stable</span></div>
         </div>
     </footer>
 
-    <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2 pointer-events-none"></div>
 
-    <!-- Firebase Echtzeit-Datenbank Skriptblock -->
     <script type="module">
-        // Import der Firebase Web SDK Module
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        // ==========================================
-        // IHRE INTEGRIERTE FIREBASE-KONFIGURATION:
-        // ==========================================
+        // FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyDmwKHhJ6df7yOoR_LPUvc5PD6-Shvs9t8",
             authDomain: "auslagerungsauftraege.firebaseapp.com",
@@ -409,456 +254,71 @@
             messagingSenderId: "135148773877",
             appId: "1:135148773877:web:9bed592472c82e20b140bc"
         };
-        // ==========================================
 
-        // Firebase & Firestore initialisieren
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const ordersCollection = collection(db, "orders");
 
-        // --- State Management ---
-        let currentViewMode = 'operator'; // Korrekt als globale Variable im ES-Modul deklariert
-        let lastRenderedMinute = -1;      // Korrekt als globale Variable im ES-Modul deklariert
-        let orders = []; 
+        // STATE
+        let orders = [];
+        let lastRenderedMinute = -1;
+        let tvSettings = JSON.parse(localStorage.getItem('intralog_tv_settings')) || { height: 60, fontSize: 16, gap: 8, columns: 'auto' };
 
-        // Kalibrierungseinstellungen für die TV-Ansicht (Local Storage)
-        let tvSettings = JSON.parse(localStorage.getItem('intralog_tv_settings')) || {
-            height: 60,
-            fontSize: 16,
-            gap: 8,
-            columns: 'auto'
+        // HELPER: HTML-Escape (Verhindert Abstürze)
+        function escapeHtml(text) {
+            if (!text) return "";
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // HELPER: Toasts
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `p-3 rounded-lg shadow-lg border text-white text-xs font-bold transition-all duration-300 flex items-center space-x-2 pointer-events-auto ${type === 'error' ? 'bg-red-600 border-red-700' : 'bg-slate-800 border-slate-700'}`;
+            toast.innerHTML = `<i data-lucide="info" class="w-4 h-4"></i><span>${message}</span>`;
+            document.getElementById('toast-container').appendChild(toast);
+            lucide.createIcons();
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        // HELPER: Theme Init
+        function initTheme() {
+            const saved = localStorage.getItem('theme');
+            if (saved === 'light') document.documentElement.classList.remove('dark');
+            else document.documentElement.classList.add('dark');
+        }
+
+        // NAVIGATION
+        window.setViewMode = function(mode) {
+            document.getElementById('operator-view').classList.toggle('hidden', mode !== 'operator');
+            document.getElementById('tv-view').classList.toggle('hidden', mode !== 'tv');
+            document.getElementById('tablet-view').classList.toggle('hidden', mode !== 'tablet');
+            document.getElementById('dashboard-footer').classList.toggle('hidden', mode === 'tv');
+
+            document.querySelectorAll('[id^="btn-mode-"]').forEach(btn => {
+                btn.className = "px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center space-x-1 text-slate-500";
+            });
+            const activeBtn = document.getElementById(`btn-mode-${mode}`);
+            activeBtn.className = "px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center space-x-1 bg-white dark:bg-zinc-950 shadow-sm text-brand-500";
+            
+            renderOrders();
         };
 
-        // --- Firebase Realtime-Synchronisation ---
+        // FIREBASE SYNC
         const q = query(ordersCollection, orderBy("createdAt", "desc"));
         onSnapshot(q, (snapshot) => {
             orders = [];
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                orders.push({
-                    id: doc.id, 
-                    artikelnummer: data.artikelnummer,
-                    lagerort: data.lagerort,
-                    zielort: data.zielort,
-                    uhrzeit: data.uhrzeit,
-                    schicht: data.schicht,
-                    dringlich: data.dringlich
-                });
-            });
-            renderOrders(); 
-        }, (error) => {
-            console.error("Firestore Synchronisationsfehler:", error);
-        });
-
-        // --- DOM Elements ---
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const btnOperator = document.getElementById('btn-mode-operator');
-        const btnTv = document.getElementById('btn-mode-tv');
-        const btnTablet = document.getElementById('btn-mode-tablet');
-
-        const operatorView = document.getElementById('operator-view');
-        const tvView = document.getElementById('tv-view');
-        const tabletView = document.getElementById('tablet-view');
-        const dashboardFooter = document.getElementById('dashboard-footer');
-
-        const clockElement = document.getElementById('live-clock');
-        const tvClockElement = document.getElementById('tv-clock');
-        const tabletClocks = document.querySelectorAll('.tablet-clock');
-
-        const kpiOpen = document.getElementById('kpi-open');
-        const kpiUrgent = document.getElementById('kpi-urgent');
-
-        const tvKpiTotal = document.getElementById('tv-kpi-total');
-        const tvKpiUrgent = document.getElementById('tv-kpi-urgent');
-
-        const orderForm = document.getElementById('auftrag-form');
-        const tableBody = document.getElementById('auftrag-table-body');
-        const tvGrid = document.getElementById('tv-grid');
-        const tabletGrid = document.getElementById('tablet-grid');
-
-        const emptyState = document.getElementById('empty-state');
-        const tvEmptyState = document.getElementById('tv-empty-state');
-        const tabletEmptyState = document.getElementById('tablet-empty-state');
-        const orderCountBadge = document.getElementById('auftrag-count');
-        const toastContainer = document.getElementById('toast-container');
-
-        const tvSettingsToggle = document.getElementById('tv-settings-toggle');
-        const tvSettingsPanel = document.getElementById('tv-settings-panel');
-        const inputHeight = document.getElementById('input-height');
-        const inputFont = document.getElementById('input-font');
-        const inputGap = document.getElementById('input-gap');
-        const inputColumns = document.getElementById('input-columns');
-
-        const valHeight = document.getElementById('val-height');
-        const valFont = document.getElementById('val-font');
-        const valGap = document.getElementById('val-gap');
-
-        // --- Navigation Switcher ---
-        function setViewMode(mode) {
-            currentViewMode = mode;
-            operatorView.classList.add('hidden');
-            tvView.classList.add('hidden');
-            tabletView.classList.add('hidden');
-            dashboardFooter.classList.remove('hidden');
-
-            [btnOperator, btnTv, btnTablet].forEach(btn => {
-                btn.className = "px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center space-x-1 text-slate-500 dark:text-zinc-400";
-            });
-
-            if (mode === 'operator') {
-                operatorView.classList.remove('hidden');
-                btnOperator.className = "px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center space-x-1 bg-white dark:bg-zinc-950 shadow-sm text-brand-500";
-            } else if (mode === 'tv') {
-                tvView.classList.remove('hidden');
-                dashboardFooter.classList.add('hidden');
-                btnTv.className = "px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center space-x-1 bg-white dark:bg-zinc-950 shadow-sm text-brand-500";
-            } else if (mode === 'tablet') {
-                tabletView.classList.remove('hidden');
-                btnTablet.className = "px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center space-x-1 bg-white dark:bg-zinc-950 shadow-sm text-brand-500";
-            }
-            renderOrders();
-        }
-
-        btnOperator.addEventListener('click', () => setViewMode('operator'));
-        btnTv.addEventListener('click', () => setViewMode('tv'));
-        btnTablet.addEventListener('click', () => setViewMode('tablet'));
-
-        // --- Layout Calibration Logic ---
-        function applyTvSettings() {
-            document.documentElement.style.setProperty('--tv-card-height', `${tvSettings.height}px`);
-            document.documentElement.style.setProperty('--tv-font-size', `${tvSettings.fontSize}px`);
-            document.documentElement.style.setProperty('--tv-gap', `${tvSettings.gap}px`);
-
-            tvGrid.className = "grid flex-grow auto-rows-max"; 
-            if (tvSettings.columns === 'auto') {
-                tvGrid.classList.add('grid-cols-1', 'md:grid-cols-2', 'xl:grid-cols-3');
-            } else {
-                tvGrid.classList.add(`grid-cols-${tvSettings.columns}`);
-            }
-
-            inputHeight.value = tvSettings.height;
-            inputFont.value = tvSettings.fontSize;
-            inputGap.value = tvSettings.gap;
-            inputColumns.value = tvSettings.columns;
-
-            valHeight.textContent = `${tvSettings.height}px`;
-            valFont.textContent = `${tvSettings.fontSize}px`;
-            valGap.textContent = `${tvSettings.gap}px`;
-
-            localStorage.setItem('intralog_tv_settings', JSON.stringify(tvSettings));
-        }
-
-        inputHeight.addEventListener('input', (e) => {
-            tvSettings.height = parseInt(e.target.value);
-            applyTvSettings();
-        });
-        inputFont.addEventListener('input', (e) => {
-            tvSettings.fontSize = parseInt(e.target.value);
-            applyTvSettings();
-        });
-        inputGap.addEventListener('input', (e) => {
-            tvSettings.gap = parseInt(e.target.value);
-            applyTvSettings();
-        });
-        inputColumns.addEventListener('change', (e) => {
-            tvSettings.columns = e.target.value;
-            applyTvSettings();
-        });
-
-        tvSettingsToggle.addEventListener('click', () => {
-            tvSettingsPanel.classList.toggle('hidden');
-        });
-
-        // --- Theme Toggle ---
-        themeToggleBtn.addEventListener('click', () => {
-            if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            }
+            snapshot.forEach((doc) => orders.push({ id: doc.id, ...doc.data() }));
             renderOrders();
         });
 
-        // --- Live Clock ---
-        function updateClock() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('de-DE');
-            
-            clockElement.textContent = timeString;
-            tvClockElement.textContent = timeString;
-            tabletClocks.forEach(c => c.textContent = timeString);
-            
-            const timeInput = document.getElementById('uhrzeit');
-            if (!timeInput.value) {
-                const hoursStr = String(now.getHours()).padStart(2, '0');
-                const minutesStr = String(now.getMinutes()).padStart(2, '0');
-                timeInput.value = `${hoursStr}:${minutesStr}`;
-            }
-
-            // Sicherer Live-Vergleich
-            const currentMinute = now.getMinutes();
-            if (currentMinute !== lastRenderedMinute) {
-                lastRenderedMinute = currentMinute;
-                renderOrders(); 
-            }
-        }
-
-        function getMinutesSinceMidnight(timeStr) {
-            if (!timeStr) return 0;
-            const [hours, minutes] = timeStr.split(':').map(Number);
-            return (hours * 60) + minutes;
-        }
-
-        // --- Render Engine ---
-        function renderOrders() {
-            const now = new Date();
-            const currentMinutes = (now.getHours() * 60) + now.getMinutes();
-
-            // 1. SORTIERUNG NACH DRI-ÜBE-GEP PRIORITÄT
-            const sortedOrders = [...orders].sort((a, b) => {
-                const minA = getMinutesSinceMidnight(a.uhrzeit);
-                const minB = getMinutesSinceMidnight(b.uhrzeit);
-
-                if (a.dringlich && !b.dringlich) return -1;
-                if (!a.dringlich && b.dringlich) return 1;
-
-                if (a.dringlich && b.dringlich) {
-                    return minA - minB;
-                }
-
-                const isOverdueA = minA < currentMinutes;
-                const isOverdueB = minB < currentMinutes;
-
-                if (isOverdueA && !isOverdueB) return -1;
-                if (!isOverdueA && isOverdueB) return 1;
-
-                return minA - minB;
-            });
-
-            // 2. RENDER BEDIENER-ANSICHT
-            tableBody.innerHTML = '';
-            if (sortedOrders.length === 0) {
-                emptyState.classList.remove('hidden');
-                orderCountBadge.textContent = '0 Einträge';
-            } else {
-                emptyState.classList.add('hidden');
-                orderCountBadge.textContent = `${sortedOrders.length} Eintrag/Einträge`;
-
-                sortedOrders.forEach(order => {
-                    const min = getMinutesSinceMidnight(order.uhrzeit);
-                    const isOverdue = min < currentMinutes && !order.dringlich;
-                    
-                    let borderAccent = '';
-                    let statusBadge = '';
-
-                    if (order.dringlich) {
-                        borderAccent = 'border-l-4 border-l-red-500';
-                        statusBadge = '<span class="px-2.5 py-0.5 text-xs font-bold bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-full flex items-center gap-1 w-max"><span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>Dringend</span>';
-                    } else if (isOverdue) {
-                        borderAccent = 'border-l-4 border-l-amber-500';
-                        statusBadge = '<span class="px-2.5 py-0.5 text-xs font-bold bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-full flex items-center gap-1 w-max"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>Überfällig</span>';
-                    } else {
-                        statusBadge = '<span class="px-2.5 py-0.5 text-xs font-medium bg-slate-100 dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 rounded-full w-max">Geplant</span>';
-                    }
-
-                    const tr = document.createElement('tr');
-                    tr.className = `hover:bg-slate-50 dark:hover:bg-zinc-900/50 transition-colors ${borderAccent}`;
-                    
-                    tr.innerHTML = `
-                        <td class="px-6 py-4 font-mono font-medium">${escapeHtml(order.artikelnummer)}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center space-x-2">
-                                <span class="px-2 py-1 bg-slate-100 dark:bg-zinc-900 rounded font-mono text-xs text-slate-600 dark:text-zinc-300">${escapeHtml(order.lagerort)}</span>
-                                <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-slate-400"></i>
-                                <span class="px-2 py-1 bg-slate-100 dark:bg-zinc-900 rounded font-mono text-xs text-slate-600 dark:text-zinc-300">${escapeHtml(order.zielort)}</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="text-xs font-semibold text-slate-500 dark:text-zinc-500">${order.schicht}</div>
-                            <div class="font-mono text-xs mt-0.5">${order.uhrzeit} Uhr</div>
-                        </td>
-                        <td class="px-6 py-4">
-                            ${statusBadge}
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <button onclick="deleteOrder('${order.id}')" class="p-1.5 text-slate-400 hover:text-red-500 rounded hover:bg-slate-100 dark:hover:bg-zinc-900 transition-colors inline-flex" title="Auftrag abschließen">
-                                <i data-lucide="check-square" class="w-5 h-5"></i>
-                            </button>
-                        </td>
-                    `;
-                    tableBody.appendChild(tr);
-                });
-            }
-
-            // 3. RENDER TV-ANSICHT
-            tvGrid.innerHTML = '';
-            if (sortedOrders.length === 0) {
-                tvEmptyState.classList.remove('hidden');
-                tvGrid.classList.add('hidden');
-            } else {
-                tvEmptyState.classList.add('hidden');
-                tvGrid.classList.remove('hidden');
-
-                sortedOrders.forEach(order => {
-                    const min = getMinutesSinceMidnight(order.uhrzeit);
-                    const isOverdue = min < currentMinutes && !order.dringlich;
-
-                    let stripeColor = 'bg-zinc-600';
-                    let cardBorderBg = 'border-slate-200 dark:border-zinc-900 bg-white dark:bg-zinc-950';
-                    let timeBadge = '';
-
-                    if (order.dringlich) {
-                        stripeColor = 'bg-red-500 animate-pulse-fast';
-                        cardBorderBg = 'border-red-500/30 dark:bg-red-950/10 dark:border-red-950/20 glow-red animate-pulse-fast';
-                        timeBadge = '<span class="text-[10px] tv-card-text-xs font-black text-red-500 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse-fast"></span>DRINGEND</span>';
-                    } else if (isOverdue) {
-                        stripeColor = 'bg-amber-500';
-                        cardBorderBg = 'border-amber-500/30 dark:bg-amber-950/10 dark:border-zinc-950 glow-amber';
-                        timeBadge = '<span class="text-[10px] tv-card-text-xs font-black text-amber-500 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></span>ÜBERFÄLLIG</span>';
-                    } else {
-                        stripeColor = 'bg-zinc-600';
-                        timeBadge = '<span class="text-[10px] tv-card-text-xs font-bold text-zinc-400 dark:text-zinc-600">GEPLANT</span>';
-                    }
-
-                    const card = document.createElement('div');
-                    card.className = `flex items-center justify-between border rounded-xl overflow-hidden shadow-sm tv-card-row pr-4 ${cardBorderBg} transition-all duration-300`;
-                    
-                    card.innerHTML = `
-                        <!-- Farblicher Prio-Streifen -->
-                        <div class="w-2.5 h-full ${stripeColor} shrink-0"></div>
-                        
-                        <div class="flex-grow flex items-center justify-between pl-3.5 space-x-3 overflow-hidden">
-                            <!-- Artikelnummer -->
-                            <div class="shrink-0 w-28">
-                                <span class="block text-[8px] tv-card-text-xs uppercase tracking-wider text-slate-400 dark:text-zinc-600 font-bold">Artikel</span>
-                                <span class="text-base tv-card-text-lg font-black font-mono tracking-tight text-slate-800 dark:text-zinc-100 truncate block">${escapeHtml(order.artikelnummer)}</span>
-                            </div>
-
-                            <!-- Route -->
-                            <div class="flex-grow flex items-center justify-center space-x-2">
-                                <span class="px-2 py-0.5 bg-slate-100 dark:bg-zinc-900 rounded font-mono text-xs tv-card-text-sm font-bold text-slate-600 dark:text-zinc-300 border border-slate-200/50 dark:border-zinc-800/80">${escapeHtml(order.lagerort)}</span>
-                                <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
-                                <span class="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/20 rounded font-mono text-xs tv-card-text-sm font-bold text-emerald-600 dark:text-emerald-400 border border-emerald-200/30 dark:border-emerald-900/30">${escapeHtml(order.zielort)}</span>
-                            </div>
-
-                            <!-- Soll-Zeit & Prioritätsanzeige -->
-                            <div class="text-right shrink-0 w-24">
-                                <div class="font-mono font-bold text-sm tv-card-text-sm text-slate-700 dark:text-zinc-300">${order.uhrzeit}</div>
-                                <div class="mt-0.5">${timeBadge}</div>
-                            </div>
-                        </div>
-                    `;
-                    tvGrid.appendChild(card);
-                });
-            }
-
-            // 4. RENDER TABLET-ANSICHT (Mit Barcodes)
-            tabletGrid.innerHTML = '';
-            if (sortedOrders.length === 0) {
-                tabletEmptyState.classList.remove('hidden');
-                tabletGrid.classList.add('hidden');
-            } else {
-                tabletEmptyState.classList.add('hidden');
-                tabletGrid.classList.remove('hidden');
-
-                sortedOrders.forEach(order => {
-                    const min = getMinutesSinceMidnight(order.uhrzeit);
-                    const isOverdue = min < currentMinutes && !order.dringlich;
-
-                    let stripeColor = 'bg-zinc-600';
-                    let cardBorderBg = 'border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950';
-                    let timeBadge = '';
-
-                    if (order.dringlich) {
-                        stripeColor = 'bg-red-500 animate-pulse-fast';
-                        cardBorderBg = 'border-red-500/30 dark:bg-red-950/10 dark:border-red-950/20 glow-red';
-                        timeBadge = '<span class="text-[10px] font-black text-red-500 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse-fast"></span>DRINGEND</span>';
-                    } else if (isOverdue) {
-                        stripeColor = 'bg-amber-500';
-                        cardBorderBg = 'border-amber-500/30 dark:bg-amber-950/10 dark:border-zinc-950 glow-amber';
-                        timeBadge = '<span class="text-[10px] font-black text-amber-500 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></span>ÜBERFÄLLIG</span>';
-                    } else {
-                        stripeColor = 'bg-zinc-600';
-                        timeBadge = '<span class="text-[10px] tv-card-text-xs font-bold text-zinc-400 dark:text-zinc-600">GEPLANT</span>';
-                    }
-
-                    const card = document.createElement('div');
-                    card.className = `flex items-center justify-between border rounded-xl overflow-hidden shadow-sm h-[95px] pr-3 ${cardBorderBg} transition-all duration-300`;
-                    
-                    card.innerHTML = `
-                        <!-- Farblicher Prio-Streifen -->
-                        <div class="w-2.5 h-full ${stripeColor} shrink-0"></div>
-                        
-                        <div class="flex-grow flex items-center justify-between pl-3 space-x-2 overflow-hidden">
-                            <div class="bg-white p-1 rounded border border-slate-200 shrink-0 shadow-sm flex items-center justify-center">
-                                <svg class="tablet-barcode" data-value="${escapeHtml(order.artikelnummer)}"></svg>
-                            </div>
-
-                            <div class="flex-grow flex flex-col items-center justify-center space-y-1 px-1">
-                                <div class="flex items-center space-x-1.5">
-                                    <span class="px-2 py-0.5 bg-slate-100 dark:bg-zinc-900 rounded font-mono text-xs font-black text-slate-700 dark:text-zinc-200 border border-slate-200/50 dark:border-zinc-800">${escapeHtml(order.lagerort)}</span>
-                                    <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
-                                    <span class="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/20 rounded font-mono text-xs font-black text-emerald-600 dark:text-emerald-400 border border-emerald-200/30 dark:border-emerald-900/30">${escapeHtml(order.zielort)}</span>
-                                </div>
-                                <div class="text-[10px] font-medium text-slate-400 dark:text-zinc-500 truncate">
-                                    Schicht: ${escapeHtml(order.schicht)}
-                                </div>
-                            </div>
-
-                            <div class="flex items-center space-x-2.5 shrink-0">
-                                <div class="text-right">
-                                    <div class="font-mono font-bold text-sm text-slate-700 dark:text-zinc-200">${order.uhrzeit}</div>
-                                    <div class="mt-0.5">${timeBadge}</div>
-                                </div>
-                                <button onclick="deleteOrder('${order.id}')" class="p-2.5 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white rounded-lg shadow-sm transition-colors flex items-center justify-center" title="Auftrag abschließen">
-                                    <i data-lucide="check" class="w-5 h-5 stroke-[3]"></i>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    tabletGrid.appendChild(card);
-                });
-
-                document.querySelectorAll('.tablet-barcode').forEach(el => {
-                    const val = el.getAttribute('data-value');
-                    try {
-                        JsBarcode(el, val, {
-                            format: "CODE128", 
-                            width: 1.1,        
-                            height: 35,        
-                            displayValue: true, 
-                            fontSize: 10,
-                            margin: 0,
-                            background: "#ffffff",
-                            lineColor: "#000000"
-                        });
-                    } catch (err) {
-                        console.error("JsBarcode Fehler für Wert:", val, err);
-                    }
-                });
-            }
-
-            // KPIs berechnen
-            const urgentCount = orders.filter(o => o.dringlich).length;
-            const overdueCount = orders.filter(o => {
-                const min = getMinutesSinceMidnight(o.uhrzeit);
-                return min < currentMinutes && !o.dringlich;
-            }).length;
-            
-            kpiOpen.textContent = sortedOrders.length;
-            kpiUrgent.textContent = urgentCount;
-
-            tvKpiTotal.textContent = sortedOrders.length;
-            tvKpiUrgent.textContent = urgentCount + overdueCount;
-
-            lucide.createIcons();
-        }
-
-        // --- Actions ---
-        orderForm.addEventListener('submit', async (e) => {
+        // FORM SUBMIT
+        document.getElementById('auftrag-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.disabled = true;
+            btn.innerText = "Sende...";
 
             const newOrder = {
                 artikelnummer: document.getElementById('artikelnummer').value.trim(),
@@ -867,42 +327,182 @@
                 uhrzeit: document.getElementById('uhrzeit').value,
                 schicht: document.getElementById('schicht').value,
                 dringlich: document.getElementById('dringlich').checked,
-                createdAt: Date.now() // Sortierkriterium für Firestore
+                createdAt: Date.now()
             };
 
             try {
-                // Fügt das Dokument asynchron zu Firestore hinzu
                 await addDoc(ordersCollection, newOrder);
-                showToast(`Auftrag für ${newOrder.artikelnummer} erfolgreich hinzugefügt.`);
+                showToast("Auftrag erfolgreich gespeichert");
+                e.target.reset();
+                // Reset Time to now
+                const now = new Date();
+                document.getElementById('uhrzeit').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
             } catch (err) {
-                console.error("Firestore Schreibfehler:", err);
-                showToast("Fehler bei Cloud-Übertragung.");
+                console.error(err);
+                showToast("Firebase Fehler: Zugriff verweigert!", "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Auftrag einreihen";
             }
-
-            document.getElementById('artikelnummer').value = '';
-            document.getElementById('lagerort').value = '';
-            document.getElementById('zielort').value = '';
-            document.getElementById('dringlich').checked = false;
         });
 
-        // Funktion muss im ES-Modul an window gebunden werden, um im HTML aufgerufen werden zu können
+        // DELETE
         window.deleteOrder = async function(id) {
             try {
-                // Löscht das Dokument asynchron aus Firestore anhand der eindeutigen Firebase-Dokumenten-ID
                 await deleteDoc(doc(db, "orders", id));
-                showToast('Auftrag abgeschlossen und aus Liste entfernt.');
+                showToast("Auftrag abgeschlossen");
             } catch (err) {
-                console.error("Firestore Löschfehler:", err);
+                showToast("Fehler beim Löschen", "error");
             }
+        };
+
+        // RENDER LOGIC
+        function getMinutesSinceMidnight(timeStr) {
+            if (!timeStr) return 0;
+            const [h, m] = timeStr.split(':').map(Number);
+            return (h * 60) + m;
         }
 
-        // --- Initialization ---
+        function renderOrders() {
+            const now = new Date();
+            const currentMinutes = (now.getHours() * 60) + now.getMinutes();
+
+            const sorted = [...orders].sort((a, b) => {
+                const minA = getMinutesSinceMidnight(a.uhrzeit);
+                const minB = getMinutesSinceMidnight(b.uhrzeit);
+                if (a.dringlich && !b.dringlich) return -1;
+                if (!a.dringlich && b.dringlich) return 1;
+                return minA - minB;
+            });
+
+            // 1. Operator Table
+            const tableBody = document.getElementById('auftrag-table-body');
+            tableBody.innerHTML = '';
+            document.getElementById('empty-state').classList.toggle('hidden', sorted.length > 0);
+            
+            sorted.forEach(order => {
+                const isOverdue = getMinutesSinceMidnight(order.uhrzeit) < currentMinutes && !order.dringlich;
+                const tr = document.createElement('tr');
+                tr.className = `hover:bg-slate-50 dark:hover:bg-zinc-900/50 transition-colors ${order.dringlich ? 'border-l-4 border-l-red-500' : isOverdue ? 'border-l-4 border-l-amber-500' : ''}`;
+                tr.innerHTML = `
+                    <td class="px-6 py-4 font-mono font-bold">${escapeHtml(order.artikelnummer)}</td>
+                    <td class="px-6 py-4 font-mono text-xs text-slate-500">${escapeHtml(order.lagerort)} ➔ ${escapeHtml(order.zielort)}</td>
+                    <td class="px-6 py-4 text-xs font-medium">${order.uhrzeit}</td>
+                    <td class="px-6 py-4">
+                        ${order.dringlich ? '<span class="text-red-500 font-bold text-[10px] animate-pulse">DRINGEND</span>' : isOverdue ? '<span class="text-amber-500 font-bold text-[10px]">ÜBERFÄLLIG</span>' : '<span class="text-slate-400 text-[10px]">GEPLANT</span>'}
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <button onclick="deleteOrder('${order.id}')" class="text-slate-400 hover:text-emerald-500"><i data-lucide="check-square" class="w-5 h-5"></i></button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            // 2. TV Grid
+            const tvGrid = document.getElementById('tv-grid');
+            tvGrid.innerHTML = '';
+            document.getElementById('tv-empty-state').classList.toggle('hidden', sorted.length > 0);
+            
+            sorted.forEach(order => {
+                const isOverdue = getMinutesSinceMidnight(order.uhrzeit) < currentMinutes && !order.dringlich;
+                const card = document.createElement('div');
+                card.className = `tv-card-row flex items-center border rounded-xl overflow-hidden bg-white dark:bg-zinc-950 pr-4 shadow-sm ${order.dringlich ? 'glow-red border-red-500/50' : isOverdue ? 'glow-amber border-amber-500/50' : 'border-slate-200 dark:border-zinc-800'}`;
+                card.innerHTML = `
+                    <div class="w-2 h-full ${order.dringlich ? 'bg-red-500 animate-pulse' : isOverdue ? 'bg-amber-500' : 'bg-slate-400'}"></div>
+                    <div class="flex-grow flex items-center justify-between pl-4">
+                        <div class="w-32 truncate"><p class="tv-card-text-xs text-slate-400 font-bold uppercase">Artikel</p><p class="tv-card-text-lg font-black font-mono">${escapeHtml(order.artikelnummer)}</p></div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-0.5 bg-slate-100 dark:bg-zinc-900 rounded font-mono tv-card-text-sm font-bold">${escapeHtml(order.lagerort)}</span>
+                            <i data-lucide="arrow-right" class="w-3 h-3 text-slate-300"></i>
+                            <span class="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded font-mono tv-card-text-sm font-bold">${escapeHtml(order.zielort)}</span>
+                        </div>
+                        <div class="text-right"><p class="tv-card-text-sm font-mono font-black">${order.uhrzeit}</p></div>
+                    </div>
+                `;
+                tvGrid.appendChild(card);
+            });
+
+            // 3. Tablet Grid
+            const tabletGrid = document.getElementById('tablet-grid');
+            tabletGrid.innerHTML = '';
+            document.getElementById('tablet-empty-state').classList.toggle('hidden', sorted.length > 0);
+            
+            sorted.forEach(order => {
+                const card = document.createElement('div');
+                card.className = "flex items-center justify-between border dark:border-zinc-800 bg-white dark:bg-zinc-950 p-3 rounded-xl shadow-sm h-24";
+                card.innerHTML = `
+                    <div class="bg-white p-1 rounded border shadow-inner"><svg class="barcode" data-value="${order.artikelnummer}"></svg></div>
+                    <div class="flex flex-col items-center">
+                        <div class="flex items-center space-x-1 font-mono text-xs font-black">
+                            <span>${order.lagerort}</span><i data-lucide="arrow-right" class="w-3 h-3"></i><span class="text-emerald-500">${order.zielort}</span>
+                        </div>
+                        <div class="text-[10px] text-slate-400">${order.uhrzeit} Uhr</div>
+                    </div>
+                    <button onclick="deleteOrder('${order.id}')" class="w-12 h-12 bg-emerald-500 text-white rounded-lg flex items-center justify-center"><i data-lucide="check" class="stroke-[4]"></i></button>
+                `;
+                tabletGrid.appendChild(card);
+            });
+
+            // Barcodes generieren
+            document.querySelectorAll('.barcode').forEach(el => {
+                JsBarcode(el, el.getAttribute('data-value'), { format: "CODE128", width: 1.2, height: 40, displayValue: true, fontSize: 10 });
+            });
+
+            // KPIs & Icons
+            const urgentCount = sorted.filter(o => o.dringlich || getMinutesSinceMidnight(o.uhrzeit) < currentMinutes).length;
+            document.getElementById('kpi-open').textContent = sorted.length;
+            document.getElementById('kpi-urgent').textContent = urgentCount;
+            document.getElementById('tv-kpi-total').textContent = sorted.length;
+            document.getElementById('tv-kpi-urgent').textContent = urgentCount;
+            document.getElementById('auftrag-count').textContent = `${sorted.length} Einträge`;
+            
+            lucide.createIcons();
+        }
+
+        // LAYOUT SETTINGS (TV)
+        function applyTvSettings() {
+            document.documentElement.style.setProperty('--tv-card-height', `${tvSettings.height}px`);
+            document.documentElement.style.setProperty('--tv-font-size', `${tvSettings.fontSize}px`);
+            document.documentElement.style.setProperty('--tv-gap', `${tvSettings.gap}px`);
+            const grid = document.getElementById('tv-grid');
+            grid.className = "grid flex-grow auto-rows-max " + (tvSettings.columns === 'auto' ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3" : `grid-cols-${tvSettings.columns}`);
+            
+            document.getElementById('val-height').textContent = tvSettings.height + 'px';
+            document.getElementById('val-font').textContent = tvSettings.fontSize + 'px';
+            document.getElementById('val-gap').textContent = tvSettings.gap + 'px';
+            localStorage.setItem('intralog_tv_settings', JSON.stringify(tvSettings));
+        }
+
+        document.getElementById('input-height').addEventListener('input', (e) => { tvSettings.height = e.target.value; applyTvSettings(); });
+        document.getElementById('input-font').addEventListener('input', (e) => { tvSettings.fontSize = e.target.value; applyTvSettings(); });
+        document.getElementById('input-gap').addEventListener('input', (e) => { tvSettings.gap = e.target.value; applyTvSettings(); });
+        document.getElementById('input-columns').addEventListener('change', (e) => { tvSettings.columns = e.target.value; applyTvSettings(); });
+        document.getElementById('tv-settings-toggle').addEventListener('click', () => document.getElementById('tv-settings-panel').classList.toggle('hidden'));
+
+        // THEME TOGGLE
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+
+        // CLOCK & INIT
+        setInterval(() => {
+            const time = new Date().toLocaleTimeString('de-DE');
+            document.getElementById('live-clock').textContent = time;
+            document.getElementById('tv-clock').textContent = time;
+            document.querySelectorAll('.tablet-clock').forEach(c => c.textContent = time);
+            
+            if (new Date().getSeconds() === 0) renderOrders(); // Minute refresh
+        }, 1000);
+
+        // INITIAL START
         initTheme();
-        applyTvSettings(); 
-        updateConnectionStatus(); 
-        updateClock(); 
-        setInterval(updateClock, 1000); 
-        lucide.createIcons();
+        applyTvSettings();
+        window.setViewMode('operator');
+        
+        // Initial Time set
+        const now = new Date();
+        document.getElementById('uhrzeit').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     </script>
 </body>
 </html>
