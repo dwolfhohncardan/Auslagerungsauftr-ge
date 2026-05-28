@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auslagerungsaufträge - v1.8.1</title>
+    <title>Auslagerungsaufträge - v1.8.2</title>
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -90,7 +90,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg tracking-tight">Auslagerungsaufträge</h1>
-                    <p class="text-xs text-slate-500 dark:text-zinc-500">Softwareversion v1.8.1</p>
+                    <p class="text-xs text-slate-500 dark:text-zinc-500">Softwareversion v1.8.2</p>
                 </div>
             </div>
 
@@ -385,7 +385,7 @@
     <footer id="dashboard-footer" class="border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-black py-4 transition-colors duration-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-zinc-500 space-y-2 sm:space-y-0">
             <div>&copy; 2026 IntraLog-Systeme. Alle Rechte vorbehalten.</div>
-            <div class="font-mono">Code-Version: <span class="text-brand-500 dark:text-brand-400 font-semibold">v1.8.1</span></div>
+            <div class="font-mono">Code-Version: <span class="text-brand-500 dark:text-brand-400 font-semibold">v1.8.2</span></div>
         </div>
     </footer>
 
@@ -417,6 +417,8 @@
         const ordersCollection = collection(db, "orders");
 
         // --- State Management ---
+        let currentViewMode = 'operator'; // Korrekt als globale Variable im ES-Modul deklariert
+        let lastRenderedMinute = -1;      // Korrekt als globale Variable im ES-Modul deklariert
         let orders = []; 
 
         // Kalibrierungseinstellungen für die TV-Ansicht (Local Storage)
@@ -428,14 +430,13 @@
         };
 
         // --- Firebase Realtime-Synchronisation ---
-        // Hört in Echtzeit auf jede Änderung in Firestore
         const q = query(ordersCollection, orderBy("createdAt", "desc"));
         onSnapshot(q, (snapshot) => {
             orders = [];
             snapshot.forEach((doc) => {
                 const data = doc.data();
                 orders.push({
-                    id: doc.id, // Nutzen der Firebase-Dokument-ID zum punktuellen Löschen
+                    id: doc.id, 
                     artikelnummer: data.artikelnummer,
                     lagerort: data.lagerort,
                     zielort: data.zielort,
@@ -444,7 +445,7 @@
                     dringlich: data.dringlich
                 });
             });
-            renderOrders(); // Rendert sofort alle Ansichten neu bei Daten-Updates
+            renderOrders(); 
         }, (error) => {
             console.error("Firestore Synchronisationsfehler:", error);
         });
@@ -594,6 +595,13 @@
                 const hoursStr = String(now.getHours()).padStart(2, '0');
                 const minutesStr = String(now.getMinutes()).padStart(2, '0');
                 timeInput.value = `${hoursStr}:${minutesStr}`;
+            }
+
+            // Sicherer Live-Vergleich
+            const currentMinute = now.getMinutes();
+            if (currentMinute !== lastRenderedMinute) {
+                lastRenderedMinute = currentMinute;
+                renderOrders(); 
             }
         }
 
@@ -784,12 +792,10 @@
                         <div class="w-2.5 h-full ${stripeColor} shrink-0"></div>
                         
                         <div class="flex-grow flex items-center justify-between pl-3 space-x-2 overflow-hidden">
-                            <!-- Barcode Container (Immer weiß für 100% physische Scanbarkeit) -->
                             <div class="bg-white p-1 rounded border border-slate-200 shrink-0 shadow-sm flex items-center justify-center">
                                 <svg class="tablet-barcode" data-value="${escapeHtml(order.artikelnummer)}"></svg>
                             </div>
 
-                            <!-- Route Info (Zentriert) -->
                             <div class="flex-grow flex flex-col items-center justify-center space-y-1 px-1">
                                 <div class="flex items-center space-x-1.5">
                                     <span class="px-2 py-0.5 bg-slate-100 dark:bg-zinc-900 rounded font-mono text-xs font-black text-slate-700 dark:text-zinc-200 border border-slate-200/50 dark:border-zinc-800">${escapeHtml(order.lagerort)}</span>
@@ -801,7 +807,6 @@
                                 </div>
                             </div>
 
-                            <!-- Soll-Zeit & Großes Erledigt-Häkchen -->
                             <div class="flex items-center space-x-2.5 shrink-0">
                                 <div class="text-right">
                                     <div class="font-mono font-bold text-sm text-slate-700 dark:text-zinc-200">${order.uhrzeit}</div>
