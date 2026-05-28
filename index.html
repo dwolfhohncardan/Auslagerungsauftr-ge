@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IntraLog Pro - Ultimate v1.9.6</title>
+    <title>IntraLog Pro - Voice Master v1.9.7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -26,7 +26,7 @@
         :root { --tv-font-size: 18px; --tv-gap: 10px; }
         #tv-grid { gap: var(--tv-gap) !important; }
         .glow-error { box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); animation: pulse-red 2s infinite; }
-        @keyframes pulse-red { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        @keyframes pulse-red { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-black dark:text-zinc-100 min-h-screen flex flex-col">
@@ -36,15 +36,15 @@
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <div class="bg-brand-500 p-2 rounded-lg text-white shadow-lg">
-                    <i data-lucide="package" class="w-6 h-6"></i>
+                    <i data-lucide="volume-2" class="w-6 h-6"></i>
                 </div>
                 <div>
                     <h1 class="font-bold text-lg tracking-tight">IntraLog Dashboard</h1>
-                    <p class="text-[10px] text-slate-500 font-mono uppercase tracking-widest">System v1.9.6 Stable</p>
+                    <p class="text-[10px] text-slate-500 font-mono uppercase tracking-widest">System v1.9.7 Natural Voice</p>
                 </div>
             </div>
 
-            <nav class="flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-xl border border-slate-200 dark:border-zinc-800">
+            <nav class="flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-inner">
                 <button id="btn-mode-operator" onclick="setViewMode('operator')" class="px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2"><i data-lucide="edit-3" class="w-4 h-4"></i> Bediener</button>
                 <button id="btn-mode-tv" onclick="setViewMode('tv')" class="px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2"><i data-lucide="monitor" class="w-4 h-4"></i> TV-Monitor</button>
                 <button id="btn-mode-tablet" onclick="setViewMode('tablet')" class="px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2"><i data-lucide="tablet" class="w-4 h-4"></i> Tablet</button>
@@ -58,42 +58,48 @@
             <div class="lg:col-span-1 space-y-6">
                 <!-- Erfassung -->
                 <div class="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm">
-                    <h2 class="text-xs font-black uppercase tracking-widest mb-6 text-brand-500">Neuer Auftrag</h2>
+                    <h2 class="text-xs font-black uppercase tracking-widest mb-6 text-brand-500">Auftragserfassung</h2>
                     <form id="auftrag-form" class="space-y-4">
                         <input type="text" id="artikelnummer" required placeholder="Artikelnummer" class="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-mono outline-none focus:ring-2 focus:ring-brand-500">
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="text" id="lagerort" required placeholder="Von" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm uppercase">
-                            <input type="text" id="zielort" required placeholder="Nach" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm uppercase">
+                            <input type="text" id="lagerort" required placeholder="Lagerort" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm uppercase">
+                            <input type="text" id="zielort" required placeholder="Zielort" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm uppercase">
                         </div>
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="time" id="uhrzeit" required class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm">
-                            <select id="schicht" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm">
+                            <input type="time" id="uhrzeit" required class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-mono">
+                            <select id="schicht" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold">
                                 <option>Frühschicht</option><option>Spätschicht</option><option>Nachtschicht</option>
                             </select>
                         </div>
-                        <label class="flex items-center p-3 bg-slate-50 dark:bg-zinc-900 rounded-xl cursor-pointer border border-transparent hover:border-brand-500/30">
+                        <label class="flex items-center p-3 bg-slate-50 dark:bg-zinc-900 rounded-xl cursor-pointer border border-transparent hover:border-brand-500/30 transition-all">
                             <input type="checkbox" id="dringlich" class="w-5 h-5 accent-brand-500">
-                            <span class="ml-3 text-xs font-bold text-slate-500">Hohe Priorität</span>
+                            <span class="ml-3 text-xs font-bold text-slate-500">Dringender Express-Auftrag</span>
                         </label>
-                        <button type="submit" class="w-full py-4 bg-brand-500 text-white font-black rounded-xl hover:bg-brand-600 transition-all uppercase text-[10px]">Auftrag absenden</button>
+                        <button type="submit" class="w-full py-4 bg-brand-500 text-white font-black rounded-xl hover:bg-brand-600 transition-all uppercase text-[10px] tracking-widest">In Warteschlange senden</button>
                     </form>
                 </div>
 
                 <!-- Voice Config -->
-                <div class="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm">
-                    <h2 class="text-xs font-black uppercase tracking-widest mb-4 text-emerald-500 flex justify-between items-center">
-                        Audio-Assistenz
+                <div class="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm border-l-4 border-l-emerald-500">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xs font-black uppercase tracking-widest text-emerald-500">Audio-Assistenz</h2>
                         <input type="checkbox" id="voice-active" class="w-4 h-4 accent-emerald-500" checked>
-                    </h2>
+                    </div>
                     <div class="space-y-4">
-                        <select id="voice-gender" class="w-full p-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-[10px] font-bold"></select>
-                        <select id="voice-tone" class="w-full p-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-[10px] font-bold">
-                            <option value="friendly">Tonfall: Freundlich</option>
-                            <option value="unfriendly">Tonfall: Unfreundlich</option>
-                        </select>
+                        <div>
+                            <label class="text-[9px] font-black text-slate-400 block mb-1">STIMMEN-PROFIL</label>
+                            <select id="voice-gender" class="w-full p-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-[10px] font-bold"></select>
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-black text-slate-400 block mb-1">DURCHSAGE-STIL</label>
+                            <select id="voice-tone" class="w-full p-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-[10px] font-bold">
+                                <option value="friendly">Hallen-Durchsage (Freundlich)</option>
+                                <option value="unfriendly">Warn-Durchsage (Autoritär)</option>
+                            </select>
+                        </div>
                         <div class="flex items-center justify-between">
-                            <label class="text-[10px] font-bold text-slate-400">INTERVALL (MIN)</label>
-                            <input type="number" id="voice-interval" value="2" min="1" class="w-12 p-1 bg-slate-100 dark:bg-zinc-900 rounded text-xs font-bold text-center">
+                            <label class="text-[10px] font-bold text-slate-400">INTERVAL (MIN)</label>
+                            <input type="number" id="voice-interval" value="2" min="1" class="w-12 p-1 bg-slate-100 dark:bg-zinc-900 rounded text-xs font-bold text-center border-none">
                         </div>
                     </div>
                 </div>
@@ -103,8 +109,10 @@
             <div class="lg:col-span-3 space-y-6">
                 <div class="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden">
                     <div class="px-6 py-4 border-b border-slate-200 dark:border-zinc-800 flex justify-between items-center bg-slate-50/50 dark:bg-zinc-900/50">
-                        <h2 class="text-xs font-black uppercase tracking-widest flex items-center gap-2"><i data-lucide="list" class="w-3 h-3"></i> Offene Aufträge</h2>
-                        <div id="live-clock-operator" class="text-xs font-mono font-bold text-slate-400 tracking-tighter">00:00:00</div>
+                        <h2 class="text-xs font-black uppercase tracking-widest flex items-center gap-2 text-slate-600 dark:text-zinc-400">
+                            <i data-lucide="activity" class="w-3 h-3"></i> Aktive Auslagerungen
+                        </h2>
+                        <div id="live-clock-operator" class="text-xs font-mono font-bold text-slate-400">00:00:00</div>
                     </div>
                     <table class="w-full text-left text-sm">
                         <tbody id="table-active" class="divide-y divide-slate-100 dark:divide-zinc-900"></tbody>
@@ -113,8 +121,8 @@
 
                 <div class="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden border-dashed">
                     <div class="px-6 py-4 border-b border-slate-200 dark:border-zinc-800 flex justify-between items-center">
-                        <h2 class="text-xs font-black uppercase tracking-widest text-slate-400">Archiv / Erledigt</h2>
-                        <input type="date" id="archive-date-filter" class="text-xs bg-slate-100 dark:bg-zinc-900 rounded-lg p-1.5 font-bold outline-none">
+                        <h2 class="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2"><i data-lucide="archive" class="w-3 h-3"></i> Abgeschlossene Aufträge</h2>
+                        <input type="date" id="archive-date-filter" class="text-xs bg-slate-100 dark:bg-zinc-900 rounded-lg p-1.5 font-bold outline-none border-none">
                     </div>
                     <table class="w-full text-left text-xs text-slate-500">
                         <tbody id="table-archive" class="divide-y divide-slate-50 dark:divide-zinc-900"></tbody>
@@ -128,10 +136,10 @@
     <main id="view-tv" class="hidden flex-grow p-6 flex flex-col space-y-4">
         <div class="bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 p-6 rounded-2xl flex items-center justify-between shadow-2xl">
             <div class="flex items-center gap-8">
-                <span class="text-2xl font-black uppercase tracking-tighter text-brand-500">Logistik Monitor</span>
+                <span class="text-2xl font-black uppercase tracking-tighter text-brand-500">Hallen-Monitor</span>
                 <div class="flex gap-10 border-l pl-10 border-slate-200 dark:border-zinc-800">
-                    <div class="text-center"><p class="text-[10px] font-bold text-slate-400">WARTESCHLANGE</p><p id="tv-kpi-open" class="text-3xl font-black">0</p></div>
-                    <div class="text-center"><p class="text-[10px] font-bold text-red-500">STÖRUNGEN</p><p id="tv-kpi-error" class="text-3xl font-black text-red-500">0</p></div>
+                    <div class="text-center"><p class="text-[10px] font-bold text-slate-400 uppercase">Aufträge</p><p id="tv-kpi-open" class="text-3xl font-black">0</p></div>
+                    <div class="text-center"><p class="text-[10px] font-bold text-red-500 uppercase">Störung</p><p id="tv-kpi-error" class="text-3xl font-black text-red-500">0</p></div>
                 </div>
             </div>
             <div id="tv-clock" class="text-4xl font-mono font-black tracking-tighter">00:00:00</div>
@@ -172,7 +180,7 @@
         let view = 'operator';
         let archiveDate = new Date().toISOString().split('T')[0];
         let lastVoiceTime = 0;
-        let voiceSettings = JSON.parse(localStorage.getItem('voice_v1')) || { active: true, name: '', tone: 'friendly', interval: 2 };
+        let voiceSettings = JSON.parse(localStorage.getItem('voice_v2')) || { active: true, name: '', tone: 'friendly', interval: 2 };
 
         // --- HELPER FUNCTIONS ---
         function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
@@ -180,33 +188,74 @@
 
         function showToast(msg, type = 'info') {
             const t = document.createElement('div');
-            t.className = `px-6 py-3 rounded-xl shadow-2xl text-white text-[10px] font-black uppercase tracking-widest animate-bounce ${type === 'error' ? 'bg-red-600' : 'bg-slate-800'}`;
+            t.className = `px-6 py-3 rounded-xl shadow-2xl text-white text-[10px] font-black uppercase tracking-widest ${type === 'error' ? 'bg-red-600' : 'bg-slate-800'}`;
             t.textContent = msg;
             document.getElementById('toast-container').appendChild(t);
             setTimeout(() => t.remove(), 3000);
         }
 
-        // --- VOICE ENGINE ---
+        // --- VOICE ENGINE PRO ---
         const synth = window.speechSynthesis;
         let voices = [];
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playChime() {
+            const osc1 = audioCtx.createOscillator();
+            const osc2 = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc1.type = 'sine'; osc2.type = 'sine';
+            osc1.frequency.setValueAtTime(554.37, audioCtx.currentTime); // C#5
+            osc2.frequency.setValueAtTime(440.00, audioCtx.currentTime + 0.1); // A4
+            
+            gain.gain.setValueAtTime(0, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+            
+            osc1.connect(gain); osc2.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc1.start(); osc2.start();
+            osc1.stop(audioCtx.currentTime + 0.8);
+            osc2.stop(audioCtx.currentTime + 0.8);
+        }
+
         function initVoices() {
             voices = synth.getVoices().filter(v => v.lang.startsWith('de'));
             const sel = document.getElementById('voice-gender');
             if(sel) {
-                sel.innerHTML = voices.map(v => `<option value="${v.name}">${v.name}</option>`).join('');
+                // Bevorzuge Google-Stimmen (natürlicher)
+                voices.sort((a,b) => a.name.includes('Google') ? -1 : 1);
+                sel.innerHTML = voices.map(v => `<option value="${v.name}">${v.name.includes('Google') ? '⭐ ' : ''}${v.name}</option>`).join('');
                 if(voiceSettings.name) sel.value = voiceSettings.name;
             }
         }
         if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = initVoices;
 
-        function speak(text) {
+        function speakNatural(text) {
             if(!voiceSettings.active || synth.speaking) return;
-            const u = new SpeechSynthesisUtterance(text);
-            const v = voices.find(x => x.name === voiceSettings.name);
-            if(v) u.voice = v;
-            u.pitch = voiceSettings.tone === 'friendly' ? 1.2 : 0.6;
-            u.rate = voiceSettings.tone === 'friendly' ? 0.9 : 1.3;
-            synth.speak(u);
+            
+            // Gong abspielen
+            playChime();
+
+            setTimeout(() => {
+                const u = new SpeechSynthesisUtterance();
+                u.text = text;
+                u.lang = 'de-DE';
+                const v = voices.find(x => x.name === voiceSettings.name);
+                if(v) u.voice = v;
+
+                if(voiceSettings.tone === 'friendly') {
+                    u.pitch = 1.05;
+                    u.rate = 0.85; // Langsamer = menschlicher
+                } else {
+                    u.pitch = 0.8;
+                    u.rate = 1.05;
+                }
+                
+                // Durchsage einleiten
+                synth.speak(u);
+            }, 800); // Kurz warten nach Gong
         }
 
         // --- NAVIGATION ---
@@ -214,7 +263,6 @@
             view = mode;
             document.querySelectorAll('main').forEach(m => m.classList.add('hidden'));
             document.getElementById(`view-${mode}`).classList.remove('hidden');
-            
             document.querySelectorAll('nav button').forEach(b => {
                 const active = b.id === `btn-mode-${mode}`;
                 b.className = `px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${active ? 'bg-brand-500 text-white shadow-lg' : 'text-slate-500 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-zinc-800'}`;
@@ -222,13 +270,11 @@
             render();
         };
 
-        // --- STATUS CYCLE (3-STUFEN) ---
         window.cycleStatus = async (id, cur) => {
             const ref = doc(db, "orders", id);
             let next = cur === 0 ? { status: 1, finishedAt: Timestamp.now() } : 
                        cur === 1 ? { status: 2, finishedAt: null } : { status: 0 };
             await updateDoc(ref, next);
-            showToast(cur === 0 ? "ERLEDIGT" : cur === 1 ? "STÖRUNG GEMELDET" : "WIEDER OFFEN");
         };
 
         // --- RENDER ENGINE ---
@@ -248,10 +294,18 @@
             if(view === 'tv') renderTV(active, nowMin);
             if(view === 'tablet') renderTablet(active);
 
-            // Voice Check
+            // INTELLIGENTE DURCHSAGE LOGIK
             const overdue = active.filter(o => o.status === 0 && getMin(o.uhrzeit) < nowMin);
-            if(overdue.length > 0 && (Date.now() - lastVoiceTime > voiceSettings.interval * 60000)) {
-                speak(`Achtung. Die Auslagerung für ${overdue[0].uhrzeit} Uhr ist überfällig.`);
+            const intervalMs = voiceSettings.interval * 60000;
+
+            if(overdue.length > 0 && (Date.now() - lastVoiceTime > intervalMs)) {
+                let msg = "";
+                if(overdue.length === 1) {
+                    msg = `Achtung... Die Auslagerung für ${overdue[0].uhrzeit} Uhr ist überfällig. Bitte zeitnah auslagern.`;
+                } else {
+                    msg = `Achtung... Es liegen mehrere überfällige Auslagerungen vor. Bitte prüfen Sie umgehend die Warteschlange.`;
+                }
+                speakNatural(msg);
                 lastVoiceTime = Date.now();
             }
 
@@ -260,7 +314,6 @@
             const errCount = active.filter(o => o.status === 2).length;
             ['kpi-open', 'tv-kpi-open'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).textContent = openCount; });
             ['kpi-urgent', 'tv-kpi-error'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).textContent = errCount; });
-
             lucide.createIcons();
         }
 
@@ -269,22 +322,18 @@
                 <tr class="group hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors ${o.status === 2 ? 'bg-red-50 dark:bg-red-900/10' : ''}">
                     <td class="px-6 py-4 font-mono font-black text-xs">${esc(o.artikelnummer)}</td>
                     <td class="px-6 py-4 font-bold text-[10px] uppercase">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</td>
-                    <td class="px-6 py-4 font-mono text-xs ${getMin(o.uhrzeit) < nowMin ? 'text-amber-500 font-bold animate-pulse' : ''}">${o.uhrzeit}</td>
-                    <td class="px-6 py-4">
-                        ${o.status === 2 ? '<span class="text-[8px] font-black bg-red-500 text-white px-1.5 py-0.5 rounded">STÖRUNG</span>' : o.dringlich ? '<span class="text-[8px] font-black text-red-500">EXPRESS</span>' : ''}
-                    </td>
+                    <td class="px-6 py-4 font-mono text-xs ${getMin(o.uhrzeit) < nowMin ? 'text-amber-500 font-bold' : ''}">${o.uhrzeit}</td>
                     <td class="px-6 py-4 text-right">
-                        <button onclick="cycleStatus('${o.id}', ${o.status})" class="p-2 bg-slate-100 dark:bg-zinc-800 rounded-lg hover:bg-brand-500 hover:text-white transition-all"><i data-lucide="check" class="w-4 h-4"></i></button>
+                        <button onclick="cycleStatus('${o.id}', ${o.status})" class="p-2 bg-slate-100 dark:bg-zinc-800 rounded-lg hover:bg-brand-500 hover:text-white transition-all shadow-sm"><i data-lucide="check" class="w-4 h-4"></i></button>
                     </td>
                 </tr>
             `).join('');
 
             document.getElementById('table-archive').innerHTML = archived.map(o => `
-                <tr class="opacity-60">
+                <tr class="opacity-50">
                     <td class="px-6 py-2 font-mono">${esc(o.artikelnummer)}</td>
                     <td class="px-6 py-2 uppercase">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</td>
-                    <td class="px-6 py-2 font-mono">${o.finishedAt.toDate().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'})} Uhr</td>
-                    <td class="px-6 py-2 text-right"><button onclick="cycleStatus('${o.id}', 1)" class="hover:text-brand-500"><i data-lucide="undo-2" class="w-3 h-3"></i></button></td>
+                    <td class="px-6 py-2 text-right"><button onclick="cycleStatus('${o.id}', 1)" class="hover:text-brand-500 transition-colors"><i data-lucide="undo-2" class="w-3 h-3"></i></button></td>
                 </tr>
             `).join('');
         }
@@ -297,7 +346,7 @@
                     <div class="w-4 h-full ${o.status === 2 ? 'bg-red-500' : late ? 'bg-amber-500' : 'bg-slate-300'}"></div>
                     <div class="flex-grow flex items-center justify-between pl-8 font-black">
                         <div class="text-3xl font-mono">${esc(o.artikelnummer)}</div>
-                        <div class="flex items-center gap-4 text-xl uppercase"><span class="text-slate-400">${esc(o.lagerort)}</span><i data-lucide="chevrons-right" class="w-8 h-8 text-brand-500"></i><span>${esc(o.zielort)}</span></div>
+                        <div class="flex items-center gap-4 text-xl uppercase"><span class="text-slate-400">${esc(o.lagerort)}</span><i data-lucide="arrow-right" class="w-8 h-8 text-brand-500"></i><span>${esc(o.zielort)}</span></div>
                         <div class="text-right text-3xl font-mono ${late ? 'text-amber-500' : ''}">${o.uhrzeit}</div>
                     </div>
                 </div>`;
@@ -306,7 +355,7 @@
 
         function renderTablet(active) {
             document.getElementById('tablet-grid').innerHTML = active.map(o => `
-                <div class="bg-white dark:bg-zinc-950 border-2 ${o.status === 2 ? 'border-red-500' : 'border-slate-100 dark:border-zinc-900'} p-4 rounded-3xl flex items-center justify-between h-36">
+                <div class="bg-white dark:bg-zinc-950 border-2 ${o.status === 2 ? 'border-red-500' : 'border-slate-100 dark:border-zinc-900'} p-4 rounded-3xl flex items-center justify-between h-36 shadow-sm">
                     <div class="bg-white p-2 rounded-xl border shrink-0"><svg class="bc-svg" data-val="${o.artikelnummer}"></svg></div>
                     <div class="text-center flex-grow px-2">
                         <p class="font-black text-lg uppercase tracking-tighter">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</p>
@@ -320,48 +369,38 @@
             document.querySelectorAll('.bc-svg').forEach(el => JsBarcode(el, el.getAttribute('data-val'), { format: "CODE128", width: 2, height: 60, displayValue: true, fontSize: 14 }));
         }
 
-        // --- INITIALIZATION & EVENTS ---
+        // --- SYSTEM ---
         function initTime() {
             const n = new Date();
             document.getElementById('uhrzeit').value = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
             document.getElementById('archive-date-filter').value = archiveDate;
         }
 
-        // FIREBASE LISTENER
         onSnapshot(query(ordersCol, orderBy("createdAt", "desc")), (snap) => {
             orders = [];
             snap.forEach(d => orders.push({ id: d.id, ...d.data() }));
             render();
         });
 
-        // FORM SUBMIT
         document.getElementById('auftrag-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = e.target.querySelector('button');
-            btn.disabled = true;
-            try {
-                await addDoc(ordersCol, {
-                    artikelnummer: document.getElementById('artikelnummer').value.trim(),
-                    lagerort: document.getElementById('lagerort').value.trim().toUpperCase(),
-                    zielort: document.getElementById('zielort').value.trim().toUpperCase(),
-                    uhrzeit: document.getElementById('uhrzeit').value,
-                    schicht: document.getElementById('schicht').value,
-                    dringlich: document.getElementById('dringlich').checked,
-                    status: 0,
-                    createdAt: Timestamp.now()
-                });
-                e.target.reset();
-                initTime();
-            } catch (err) { showToast("FEHLER!", "error"); }
-            btn.disabled = false;
+            await addDoc(ordersCol, {
+                artikelnummer: document.getElementById('artikelnummer').value.trim(),
+                lagerort: document.getElementById('lagerort').value.trim().toUpperCase(),
+                zielort: document.getElementById('zielort').value.trim().toUpperCase(),
+                uhrzeit: document.getElementById('uhrzeit').value,
+                schicht: document.getElementById('schicht').value,
+                dringlich: document.getElementById('dringlich').checked,
+                status: 0, createdAt: Timestamp.now()
+            });
+            e.target.reset(); initTime();
         });
 
-        // VOICE EVENTS
         document.getElementById('voice-active').addEventListener('change', (e) => { voiceSettings.active = e.target.checked; saveV(); });
-        document.getElementById('voice-gender').addEventListener('change', (e) => { voiceSettings.name = e.target.value; saveV(); speak("Aktualisiert."); });
+        document.getElementById('voice-gender').addEventListener('change', (e) => { voiceSettings.name = e.target.value; saveV(); speakNatural("Sprachprofil aktualisiert."); });
         document.getElementById('voice-tone').addEventListener('change', (e) => { voiceSettings.tone = e.target.value; saveV(); });
         document.getElementById('voice-interval').addEventListener('change', (e) => { voiceSettings.interval = e.target.value; saveV(); });
-        function saveV() { localStorage.setItem('voice_v1', JSON.stringify(voiceSettings)); }
+        function saveV() { localStorage.setItem('voice_v2', JSON.stringify(voiceSettings)); }
 
         document.getElementById('archive-date-filter').addEventListener('change', (e) => { archiveDate = e.target.value; render(); });
 
