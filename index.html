@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IntraLog Pro - Voice Master v1.9.7</title>
+    <title>IntraLog Pro - Voice Master v1.9.8</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -27,6 +27,8 @@
         #tv-grid { gap: var(--tv-gap) !important; }
         .glow-error { box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); animation: pulse-red 2s infinite; }
         @keyframes pulse-red { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        .test-pulse { animation: pulse-emerald 1s infinite; }
+        @keyframes pulse-emerald { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); opacity: 0.8; } }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-black dark:text-zinc-100 min-h-screen flex flex-col">
@@ -40,7 +42,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg tracking-tight">IntraLog Dashboard</h1>
-                    <p class="text-[10px] text-slate-500 font-mono uppercase tracking-widest">System v1.9.7 Natural Voice</p>
+                    <p class="text-[10px] text-slate-500 font-mono uppercase tracking-widest">System v1.9.8 Audio Test</p>
                 </div>
             </div>
 
@@ -132,16 +134,25 @@
         </div>
     </main>
 
-    <!-- 2. TV MONITOR -->
+    <!-- 2. TV MONITOR (Mit Sprachtest) -->
     <main id="view-tv" class="hidden flex-grow p-6 flex flex-col space-y-4">
         <div class="bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 p-6 rounded-2xl flex items-center justify-between shadow-2xl">
             <div class="flex items-center gap-8">
                 <span class="text-2xl font-black uppercase tracking-tighter text-brand-500">Hallen-Monitor</span>
-                <div class="flex gap-10 border-l pl-10 border-slate-200 dark:border-zinc-800">
-                    <div class="text-center"><p class="text-[10px] font-bold text-slate-400 uppercase">Aufträge</p><p id="tv-kpi-open" class="text-3xl font-black">0</p></div>
-                    <div class="text-center"><p class="text-[10px] font-bold text-red-500 uppercase">Störung</p><p id="tv-kpi-error" class="text-3xl font-black text-red-500">0</p></div>
+                <div class="flex gap-8 border-l pl-8 border-slate-200 dark:border-zinc-800">
+                    <div class="text-center"><p class="text-[10px] font-bold text-slate-400">AUFTRÄGE</p><p id="tv-kpi-open" class="text-3xl font-black">0</p></div>
+                    <div class="text-center"><p class="text-[10px] font-bold text-red-500">STÖRUNG</p><p id="tv-kpi-error" class="text-3xl font-black text-red-500">0</p></div>
                 </div>
             </div>
+            
+            <!-- TV Center: Sprachtest Button -->
+            <div class="flex items-center gap-3">
+                <button id="btn-voice-test" onclick="runVoiceTest()" class="flex items-center gap-3 px-6 py-3 bg-emerald-500/10 hover:bg-emerald-500 hover:text-white border border-emerald-500/30 rounded-2xl transition-all group">
+                    <i data-lucide="volume-2" class="w-5 h-5 group-hover:animate-bounce"></i>
+                    <span id="voice-test-text" class="text-sm font-black uppercase tracking-widest">Audio-Sprachtest</span>
+                </button>
+            </div>
+
             <div id="tv-clock" class="text-4xl font-mono font-black tracking-tighter">00:00:00</div>
         </div>
         <div id="tv-grid" class="grid flex-grow auto-rows-max overflow-y-auto"></div>
@@ -175,26 +186,15 @@
         const db = getFirestore(app);
         const ordersCol = collection(db, "orders");
 
-        // --- GLOBAL STATE ---
         let orders = [];
         let view = 'operator';
         let archiveDate = new Date().toISOString().split('T')[0];
         let lastVoiceTime = 0;
         let voiceSettings = JSON.parse(localStorage.getItem('voice_v2')) || { active: true, name: '', tone: 'friendly', interval: 2 };
 
-        // --- HELPER FUNCTIONS ---
         function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
         function getMin(t) { if(!t) return 0; const [h,m] = t.split(':').map(Number); return h*60+m; }
 
-        function showToast(msg, type = 'info') {
-            const t = document.createElement('div');
-            t.className = `px-6 py-3 rounded-xl shadow-2xl text-white text-[10px] font-black uppercase tracking-widest ${type === 'error' ? 'bg-red-600' : 'bg-slate-800'}`;
-            t.textContent = msg;
-            document.getElementById('toast-container').appendChild(t);
-            setTimeout(() => t.remove(), 3000);
-        }
-
-        // --- VOICE ENGINE PRO ---
         const synth = window.speechSynthesis;
         let voices = [];
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -203,18 +203,14 @@
             const osc1 = audioCtx.createOscillator();
             const osc2 = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            
             osc1.type = 'sine'; osc2.type = 'sine';
-            osc1.frequency.setValueAtTime(554.37, audioCtx.currentTime); // C#5
-            osc2.frequency.setValueAtTime(440.00, audioCtx.currentTime + 0.1); // A4
-            
+            osc1.frequency.setValueAtTime(554.37, audioCtx.currentTime);
+            osc2.frequency.setValueAtTime(440.00, audioCtx.currentTime + 0.1);
             gain.gain.setValueAtTime(0, audioCtx.currentTime);
             gain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.05);
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
-            
             osc1.connect(gain); osc2.connect(gain);
             gain.connect(audioCtx.destination);
-            
             osc1.start(); osc2.start();
             osc1.stop(audioCtx.currentTime + 0.8);
             osc2.stop(audioCtx.currentTime + 0.8);
@@ -224,7 +220,6 @@
             voices = synth.getVoices().filter(v => v.lang.startsWith('de'));
             const sel = document.getElementById('voice-gender');
             if(sel) {
-                // Bevorzuge Google-Stimmen (natürlicher)
                 voices.sort((a,b) => a.name.includes('Google') ? -1 : 1);
                 sel.innerHTML = voices.map(v => `<option value="${v.name}">${v.name.includes('Google') ? '⭐ ' : ''}${v.name}</option>`).join('');
                 if(voiceSettings.name) sel.value = voiceSettings.name;
@@ -232,33 +227,35 @@
         }
         if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = initVoices;
 
-        function speakNatural(text) {
-            if(!voiceSettings.active || synth.speaking) return;
-            
-            // Gong abspielen
+        function speakNatural(text, callback) {
+            if(!voiceSettings.active && !callback) return; // Callback erlaubt Test trotz 'Deaktiviert'
             playChime();
-
             setTimeout(() => {
-                const u = new SpeechSynthesisUtterance();
-                u.text = text;
+                const u = new SpeechSynthesisUtterance(text);
                 u.lang = 'de-DE';
                 const v = voices.find(x => x.name === voiceSettings.name);
                 if(v) u.voice = v;
-
-                if(voiceSettings.tone === 'friendly') {
-                    u.pitch = 1.05;
-                    u.rate = 0.85; // Langsamer = menschlicher
-                } else {
-                    u.pitch = 0.8;
-                    u.rate = 1.05;
-                }
-                
-                // Durchsage einleiten
+                u.pitch = voiceSettings.tone === 'friendly' ? 1.05 : 0.8;
+                u.rate = voiceSettings.tone === 'friendly' ? 0.85 : 1.05;
+                u.onend = () => { if(callback) callback(); };
                 synth.speak(u);
-            }, 800); // Kurz warten nach Gong
+            }, 800);
         }
 
-        // --- NAVIGATION ---
+        // --- SPRÄCHTEST LOGIK ---
+        window.runVoiceTest = () => {
+            const btn = document.getElementById('btn-voice-test');
+            const txt = document.getElementById('voice-test-text');
+            
+            btn.classList.add('test-pulse', 'bg-emerald-500', 'text-white');
+            txt.textContent = "Audio-Test aktiv...";
+            
+            speakNatural("Achtung... Dies ist ein akustischer Sprachtest für das IntraLog System. Die Lautsprecher funktionieren einwandfrei.", () => {
+                btn.classList.remove('test-pulse', 'bg-emerald-500', 'text-white');
+                txt.textContent = "Audio-Sprachtest";
+            });
+        };
+
         window.setViewMode = (mode) => {
             view = mode;
             document.querySelectorAll('main').forEach(m => m.classList.add('hidden'));
@@ -277,39 +274,28 @@
             await updateDoc(ref, next);
         };
 
-        // --- RENDER ENGINE ---
         function render() {
             const now = new Date();
             const nowMin = now.getHours() * 60 + now.getMinutes();
-
             const active = orders.filter(o => o.status !== 1).sort((a,b) => {
                 if(a.status === 2 && b.status !== 2) return -1;
                 if(a.status !== 2 && b.status === 2) return 1;
                 return getMin(a.uhrzeit) - getMin(b.uhrzeit);
             });
-
             const archived = orders.filter(o => o.status === 1 && o.finishedAt?.toDate().toISOString().split('T')[0] === archiveDate);
 
             if(view === 'operator') renderOperator(active, archived, nowMin);
             if(view === 'tv') renderTV(active, nowMin);
             if(view === 'tablet') renderTablet(active);
 
-            // INTELLIGENTE DURCHSAGE LOGIK
+            // Voice Logic
             const overdue = active.filter(o => o.status === 0 && getMin(o.uhrzeit) < nowMin);
-            const intervalMs = voiceSettings.interval * 60000;
-
-            if(overdue.length > 0 && (Date.now() - lastVoiceTime > intervalMs)) {
-                let msg = "";
-                if(overdue.length === 1) {
-                    msg = `Achtung... Die Auslagerung für ${overdue[0].uhrzeit} Uhr ist überfällig. Bitte zeitnah auslagern.`;
-                } else {
-                    msg = `Achtung... Es liegen mehrere überfällige Auslagerungen vor. Bitte prüfen Sie umgehend die Warteschlange.`;
-                }
+            if(overdue.length > 0 && (Date.now() - lastVoiceTime > voiceSettings.interval * 60000)) {
+                let msg = overdue.length === 1 ? `Achtung... Die Auslagerung für ${overdue[0].uhrzeit} Uhr ist überfällig. Bitte zeitnah auslagern.` : `Achtung... Es liegen mehrere überfällige Auslagerungen vor. Bitte prüfen Sie umgehend die Warteschlange.`;
                 speakNatural(msg);
                 lastVoiceTime = Date.now();
             }
 
-            // KPIs
             const openCount = active.filter(o => o.status === 0).length;
             const errCount = active.filter(o => o.status === 2).length;
             ['kpi-open', 'tv-kpi-open'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).textContent = openCount; });
@@ -324,15 +310,14 @@
                     <td class="px-6 py-4 font-bold text-[10px] uppercase">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</td>
                     <td class="px-6 py-4 font-mono text-xs ${getMin(o.uhrzeit) < nowMin ? 'text-amber-500 font-bold' : ''}">${o.uhrzeit}</td>
                     <td class="px-6 py-4 text-right">
-                        <button onclick="cycleStatus('${o.id}', ${o.status})" class="p-2 bg-slate-100 dark:bg-zinc-800 rounded-lg hover:bg-brand-500 hover:text-white transition-all shadow-sm"><i data-lucide="check" class="w-4 h-4"></i></button>
+                        <button onclick="cycleStatus('${o.id}', ${o.status})" class="p-2 bg-slate-100 dark:bg-zinc-800 rounded-lg hover:bg-brand-500 hover:text-white transition-all"><i data-lucide="check" class="w-4 h-4"></i></button>
                     </td>
                 </tr>
             `).join('');
-
             document.getElementById('table-archive').innerHTML = archived.map(o => `
                 <tr class="opacity-50">
                     <td class="px-6 py-2 font-mono">${esc(o.artikelnummer)}</td>
-                    <td class="px-6 py-2 uppercase">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</td>
+                    <td class="px-6 py-2 uppercase text-[10px]">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</td>
                     <td class="px-6 py-2 text-right"><button onclick="cycleStatus('${o.id}', 1)" class="hover:text-brand-500 transition-colors"><i data-lucide="undo-2" class="w-3 h-3"></i></button></td>
                 </tr>
             `).join('');
@@ -355,7 +340,7 @@
 
         function renderTablet(active) {
             document.getElementById('tablet-grid').innerHTML = active.map(o => `
-                <div class="bg-white dark:bg-zinc-950 border-2 ${o.status === 2 ? 'border-red-500' : 'border-slate-100 dark:border-zinc-900'} p-4 rounded-3xl flex items-center justify-between h-36 shadow-sm">
+                <div class="bg-white dark:bg-zinc-950 border-2 ${o.status === 2 ? 'border-red-500' : 'border-slate-100 dark:border-zinc-900'} p-4 rounded-3xl flex items-center justify-between h-36">
                     <div class="bg-white p-2 rounded-xl border shrink-0"><svg class="bc-svg" data-val="${o.artikelnummer}"></svg></div>
                     <div class="text-center flex-grow px-2">
                         <p class="font-black text-lg uppercase tracking-tighter">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</p>
@@ -369,7 +354,6 @@
             document.querySelectorAll('.bc-svg').forEach(el => JsBarcode(el, el.getAttribute('data-val'), { format: "CODE128", width: 2, height: 60, displayValue: true, fontSize: 14 }));
         }
 
-        // --- SYSTEM ---
         function initTime() {
             const n = new Date();
             document.getElementById('uhrzeit').value = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
@@ -401,7 +385,6 @@
         document.getElementById('voice-tone').addEventListener('change', (e) => { voiceSettings.tone = e.target.value; saveV(); });
         document.getElementById('voice-interval').addEventListener('change', (e) => { voiceSettings.interval = e.target.value; saveV(); });
         function saveV() { localStorage.setItem('voice_v2', JSON.stringify(voiceSettings)); }
-
         document.getElementById('archive-date-filter').addEventListener('change', (e) => { archiveDate = e.target.value; render(); });
 
         setInterval(() => {
