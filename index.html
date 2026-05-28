@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IntraLog Pro - Human Voice v1.9.9</title>
+    <title>IntraLog Pro - Neural Voice v2.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -17,18 +17,16 @@
             }
         }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s; }
-        .tv-card-row { height: var(--tv-card-height, 70px) !important; }
-        :root { --tv-font-size: 18px; --tv-gap: 10px; }
-        #tv-grid { gap: var(--tv-gap) !important; }
-        .glow-error { box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); animation: pulse-red 2s infinite; }
-        @keyframes pulse-red { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-        .test-active { animation: pulse-emerald 1.5s infinite; background: #10b981 !important; color: white !important; }
-        @keyframes pulse-emerald { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .tv-card-row { height: var(--tv-card-height, 75px) !important; }
+        .glow-error { box-shadow: 0 0 30px rgba(239, 68, 68, 0.6); animation: pulse-red 1.5s infinite; }
+        @keyframes pulse-red { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.98); opacity: 0.8; } }
+        .voice-active-ui { animation: pulse-emerald 1s infinite; background: #10b981 !important; color: white !important; }
+        @keyframes pulse-emerald { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-black dark:text-zinc-100 min-h-screen flex flex-col">
@@ -37,106 +35,87 @@
     <header class="border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-black sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="bg-emerald-500 p-2 rounded-lg text-white shadow-lg">
-                    <i data-lucide="mic-2" class="w-6 h-6"></i>
+                <div class="bg-brand-600 p-2 rounded-lg text-white shadow-lg">
+                    <i data-lucide="radio" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg tracking-tight">IntraLog Dashboard</h1>
-                    <p class="text-[10px] text-emerald-500 font-mono uppercase tracking-widest font-bold">Neural Voice Engine v1.9.9</p>
+                    <h1 class="font-black text-lg tracking-tight uppercase">IntraLog Neural</h1>
+                    <p class="text-[10px] text-emerald-500 font-mono font-bold uppercase tracking-widest">Acoustic Engine v2.1</p>
                 </div>
             </div>
 
-            <nav class="flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-inner">
-                <button id="btn-mode-operator" onclick="setViewMode('operator')" class="px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2"><i data-lucide="edit-3" class="w-4 h-4"></i> Bediener</button>
-                <button id="btn-mode-tv" onclick="setViewMode('tv')" class="px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2"><i data-lucide="monitor" class="w-4 h-4"></i> TV-Monitor</button>
-                <button id="btn-mode-tablet" onclick="setViewMode('tablet')" class="px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2"><i data-lucide="tablet" class="w-4 h-4"></i> Tablet</button>
+            <nav class="flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-xl border border-slate-200 dark:border-zinc-800">
+                <button id="btn-mode-operator" onclick="setViewMode('operator')" class="px-5 py-2 rounded-lg text-xs font-black uppercase transition-all">Bediener</button>
+                <button id="btn-mode-tv" onclick="setViewMode('tv')" class="px-5 py-2 rounded-lg text-xs font-black uppercase transition-all">TV-Halle</button>
+                <button id="btn-mode-tablet" onclick="setViewMode('tablet')" class="px-5 py-2 rounded-lg text-xs font-black uppercase transition-all">Tablet</button>
             </nav>
         </div>
     </header>
 
-    <!-- 1. BEDIENER ANSICHT -->
+    <!-- BEDIENER ANSICHT -->
     <main id="view-operator" class="hidden flex-grow max-w-7xl mx-auto px-4 py-8 w-full space-y-8">
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
             <div class="lg:col-span-1 space-y-6">
                 <!-- Erfassung -->
                 <div class="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm">
-                    <h2 class="text-xs font-black uppercase tracking-widest mb-6 text-brand-500 italic">Datenerfassung</h2>
+                    <h2 class="text-[10px] font-black uppercase tracking-widest mb-6 text-brand-500">Auftragserfassung</h2>
                     <form id="auftrag-form" class="space-y-4">
-                        <input type="text" id="artikelnummer" required placeholder="Artikelnummer" class="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-mono outline-none focus:ring-2 focus:ring-brand-500">
+                        <input type="text" id="artikelnummer" required placeholder="Artikelnummer" class="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-brand-500">
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="text" id="lagerort" required placeholder="Lagerort" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm uppercase">
-                            <input type="text" id="zielort" required placeholder="Zielort" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm uppercase">
+                            <input type="text" id="lagerort" required placeholder="VON" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold uppercase">
+                            <input type="text" id="zielort" required placeholder="NACH" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold uppercase">
                         </div>
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="time" id="uhrzeit" required class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-mono">
+                            <input type="time" id="uhrzeit" required class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold">
                             <select id="schicht" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold">
                                 <option>Frühschicht</option><option>Spätschicht</option><option>Nachtschicht</option>
                             </select>
                         </div>
-                        <label class="flex items-center p-3 bg-slate-50 dark:bg-zinc-900 rounded-xl cursor-pointer border border-transparent hover:border-brand-500/30 transition-all">
-                            <input type="checkbox" id="dringlich" class="w-5 h-5 accent-brand-500">
-                            <span class="ml-3 text-xs font-bold text-slate-500">Priorisierter Auftrag</span>
-                        </label>
-                        <button type="submit" class="w-full py-4 bg-brand-500 text-white font-black rounded-xl hover:bg-brand-600 transition-all uppercase text-[10px] tracking-widest">Absenden</button>
+                        <button type="submit" id="btn-submit" class="w-full py-4 bg-brand-600 text-white font-black rounded-xl hover:bg-brand-700 transition-all uppercase text-[10px] tracking-widest shadow-lg">Auftrag Senden</button>
                     </form>
                 </div>
 
-                <!-- Voice Config -->
+                <!-- Voice Config Pro -->
                 <div class="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm border-l-4 border-l-emerald-500">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xs font-black uppercase tracking-widest text-emerald-500">Stimmen-Setup (Neural)</h2>
+                        <h2 class="text-[10px] font-black uppercase tracking-widest text-emerald-500">Acoustic Setup</h2>
                         <input type="checkbox" id="voice-active" class="w-4 h-4 accent-emerald-500" checked>
                     </div>
                     <div class="space-y-4">
                         <div>
-                            <label class="text-[9px] font-black text-slate-400 block mb-1 uppercase">Menschliche Stimmen (Edge/Chrome empfohlen)</label>
-                            <select id="voice-gender" class="w-full p-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-[10px] font-bold"></select>
+                            <label class="text-[9px] font-black text-slate-400 block mb-1">KI-STIMME (GOOGLE/NEURAL)</label>
+                            <select id="voice-gender" class="w-full p-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-[10px] font-bold outline-none"></select>
                         </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="text-[9px] font-black text-slate-400 block mb-1">STIL</label>
-                                <select id="voice-tone" class="w-full p-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-[10px] font-bold">
-                                    <option value="friendly">Menschlich</option>
-                                    <option value="unfriendly">Autoritär</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-[9px] font-black text-slate-400 block mb-1">HALL (REVERB)</label>
-                                <select id="voice-reverb" class="w-full p-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-[10px] font-bold">
-                                    <option value="0.1">Keiner</option>
-                                    <option value="0.5" selected>Lagerhalle</option>
-                                    <option value="0.8">Große Halle</option>
-                                </select>
-                            </div>
+                        <div>
+                            <label class="text-[9px] font-black text-slate-400 block mb-1">HALL-INTENSITÄT (REVERB)</label>
+                            <input type="range" id="voice-reverb" min="0" max="100" value="40" class="w-full accent-emerald-500">
                         </div>
                         <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-zinc-900">
-                            <label class="text-[10px] font-bold text-slate-400">DURCHSAGE ALLE (MIN)</label>
+                            <label class="text-[10px] font-bold text-slate-400">INTERVAL (MIN)</label>
                             <input type="number" id="voice-interval" value="2" min="1" class="w-12 p-1 bg-slate-100 dark:bg-zinc-900 rounded text-xs font-bold text-center">
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Listen -->
+            <!-- Warteschlange -->
             <div class="lg:col-span-3 space-y-6">
                 <div class="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden">
                     <div class="px-6 py-4 border-b border-slate-200 dark:border-zinc-800 flex justify-between items-center bg-slate-50/50 dark:bg-zinc-900/50">
-                        <h2 class="text-xs font-black uppercase tracking-widest flex items-center gap-2 text-slate-600 dark:text-zinc-400">
-                            <i data-lucide="list" class="w-3 h-3 text-emerald-500"></i> Aktive Warteschlange
-                        </h2>
-                        <div id="live-clock-operator" class="text-xs font-mono font-bold text-slate-400">00:00:00</div>
+                        <h2 class="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-slate-500"><i data-lucide="layout-list" class="w-3 h-3"></i> Warteschlange</h2>
+                        <div id="live-clock-operator" class="text-xs font-mono font-bold text-brand-500 uppercase tracking-tighter">00:00:00</div>
                     </div>
-                    <table class="w-full text-left text-sm">
+                    <table class="w-full text-left">
                         <tbody id="table-active" class="divide-y divide-slate-100 dark:divide-zinc-900"></tbody>
                     </table>
                 </div>
 
-                <div class="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden border-dashed">
-                    <div class="px-6 py-4 border-b border-slate-200 dark:border-zinc-800 flex justify-between items-center">
-                        <h2 class="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2"><i data-lucide="archive" class="w-3 h-3"></i> Archiv</h2>
-                        <input type="date" id="archive-date-filter" class="text-xs bg-slate-100 dark:bg-zinc-900 rounded-lg p-1.5 font-bold border-none outline-none">
+                <div class="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden border-dashed p-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-[10px] font-black uppercase tracking-widest text-slate-400 italic">Archiv</h2>
+                        <input type="date" id="archive-date-filter" class="text-[10px] bg-slate-100 dark:bg-zinc-900 rounded p-1 font-bold outline-none border-none">
                     </div>
-                    <table class="w-full text-left text-xs text-slate-500">
+                    <table class="w-full text-left text-[10px] text-slate-500 mt-2">
                         <tbody id="table-archive" class="divide-y divide-slate-50 dark:divide-zinc-900"></tbody>
                     </table>
                 </div>
@@ -144,37 +123,37 @@
         </div>
     </main>
 
-    <!-- 2. TV MONITOR -->
+    <!-- TV MONITOR -->
     <main id="view-tv" class="hidden flex-grow p-6 flex flex-col space-y-4">
-        <div class="bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 p-6 rounded-2xl flex items-center justify-between shadow-2xl">
-            <div class="flex items-center gap-8">
-                <span class="text-2xl font-black uppercase tracking-tighter text-emerald-500">Live Monitor</span>
-                <div class="flex gap-8 border-l pl-8 border-slate-200 dark:border-zinc-800">
-                    <div class="text-center"><p class="text-[10px] font-bold text-slate-400">OFFEN</p><p id="tv-kpi-open" class="text-3xl font-black">0</p></div>
-                    <div class="text-center"><p class="text-[10px] font-bold text-red-500">STÖRUNG</p><p id="tv-kpi-error" class="text-3xl font-black text-red-500">0</p></div>
+        <div class="bg-white dark:bg-zinc-950 border-4 border-slate-100 dark:border-zinc-900 p-8 rounded-[40px] flex items-center justify-between shadow-2xl">
+            <div class="flex items-center gap-12">
+                <span class="text-4xl font-black uppercase tracking-tighter text-brand-600">Hallen-Monitor</span>
+                <div class="flex gap-12 border-l-4 pl-12 border-slate-100 dark:border-zinc-900 font-black">
+                    <div class="text-center"><p class="text-[12px] text-slate-400 mb-1">OFFEN</p><p id="tv-kpi-open" class="text-5xl">0</p></div>
+                    <div class="text-center"><p class="text-[12px] text-red-500 mb-1">KRITISCH</p><p id="tv-kpi-error" class="text-5xl text-red-500">0</p></div>
                 </div>
             </div>
             
-            <button id="btn-voice-test" onclick="runVoiceTest()" class="flex items-center gap-4 px-8 py-4 border-2 border-emerald-500/20 rounded-2xl hover:bg-emerald-500 hover:text-white transition-all group">
-                <i data-lucide="volume-2" class="w-6 h-6 group-hover:scale-125 transition-transform"></i>
-                <span id="voice-test-text" class="text-sm font-black uppercase tracking-widest">Human Voice Test</span>
+            <button id="btn-voice-test" onclick="runAcousticTest()" class="flex items-center gap-4 px-10 py-5 border-4 border-emerald-500/20 rounded-[30px] hover:border-emerald-500 transition-all group">
+                <i data-lucide="radio" class="w-8 h-8 group-hover:animate-pulse text-emerald-500"></i>
+                <span id="voice-test-text" class="text-lg font-black uppercase tracking-widest text-emerald-500">Akustik-Check</span>
             </button>
 
-            <div id="tv-clock" class="text-4xl font-mono font-black tracking-tighter">00:00:00</div>
+            <div id="tv-clock" class="text-6xl font-mono font-black tracking-tighter">00:00:00</div>
         </div>
-        <div id="tv-grid" class="grid flex-grow auto-rows-max overflow-y-auto"></div>
+        <div id="tv-grid" class="grid flex-grow auto-rows-max overflow-y-auto pt-4"></div>
     </main>
 
-    <!-- 3. TABLET -->
+    <!-- TABLET -->
     <main id="view-tablet" class="hidden flex-grow p-4 flex flex-col space-y-4">
-        <div class="bg-white dark:bg-zinc-950 p-4 rounded-2xl border border-slate-200 dark:border-zinc-800 flex justify-between items-center">
-            <h2 class="font-black text-sm uppercase flex items-center gap-2"><i data-lucide="tablet" class="text-brand-500"></i> Scanner Terminal</h2>
-            <div class="tablet-clock font-mono text-xs text-slate-500">00:00:00</div>
+        <div class="bg-white dark:bg-zinc-950 p-5 rounded-3xl border border-slate-200 dark:border-zinc-800 flex justify-between items-center shadow-md">
+            <h2 class="font-black text-lg uppercase flex items-center gap-3"><i data-lucide="tablet" class="text-brand-500"></i> Scanner</h2>
+            <div class="tablet-clock font-mono text-sm font-bold text-slate-400 italic">00:00:00</div>
         </div>
-        <div id="tablet-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow auto-rows-max"></div>
+        <div id="tablet-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-grow auto-rows-max"></div>
     </main>
 
-    <div id="toast-container" class="fixed bottom-6 right-6 z-[100] space-y-2"></div>
+    <div id="toast-container" class="fixed bottom-8 right-8 z-[100] space-y-2"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -188,7 +167,6 @@
             messagingSenderId: "135148773877",
             appId: "1:135148773877:web:9bed592472c82e20b140bc"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const ordersCol = collection(db, "orders");
@@ -197,95 +175,97 @@
         let view = 'operator';
         let archiveDate = new Date().toISOString().split('T')[0];
         let lastVoiceTime = 0;
-        let voiceSettings = JSON.parse(localStorage.getItem('voice_v3')) || { active: true, name: '', tone: 'friendly', interval: 2, reverb: 0.5 };
+        let voiceSettings = JSON.parse(localStorage.getItem('voice_v5')) || { active: true, name: '', interval: 2, reverb: 40 };
 
-        // --- NATÜRLICHE PHRASEN ---
-        const phrases = [
-            "Kurzer Hinweis vom System.",
-            "Entschuldigung,",
-            "Achtung,",
-            "Hallo Team,"
-        ];
-
-        // --- AUDIO ENGINE MIT REVERB (HALL) ---
+        // --- ACOUSTIC NEURAL ENGINE (NO MICROSOFT DEFAULT) ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const synth = window.speechSynthesis;
-        let voices = [];
-
-        function createReverb(duration) {
-            const sampleRate = audioCtx.sampleRate;
-            const length = sampleRate * duration;
-            const impulse = audioCtx.createBuffer(2, length, sampleRate);
+        
+        // Filter Chain
+        const bandpass = audioCtx.createBiquadFilter();
+        bandpass.type = "bandpass";
+        bandpass.frequency.value = 1200; // Telefon/Intercom-Klang
+        
+        const reverbNode = audioCtx.createConvolver();
+        function updateReverbBuffer() {
+            const length = audioCtx.sampleRate * 1.5;
+            const buffer = audioCtx.createBuffer(2, length, audioCtx.sampleRate);
+            const intensity = voiceSettings.reverb / 100;
             for (let i = 0; i < 2; i++) {
-                const channeling = impulse.getChannelData(i);
+                const data = buffer.getChannelData(i);
                 for (let j = 0; j < length; j++) {
-                    channeling[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / length, 2);
+                    data[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / length, 3) * intensity;
                 }
             }
-            return impulse;
+            reverbNode.buffer = buffer;
         }
+        updateReverbBuffer();
 
-        function speakNeural(text, isTest = false) {
+        bandpass.connect(reverbNode);
+        reverbNode.connect(audioCtx.destination);
+
+        // Natürliche Sätze-Variablen
+        const introPhrases = ["Hallo Team,", "Achtung,", "Kurzer Hinweis,", "Entschuldigung,", "Guten Tag,"];
+        const midPhrases = ["die Auslagerung für", "wir warten auf den Auftrag von", "bitte prüft den Auftrag um", "erledigt bitte den Auftrag von"];
+        const endPhrases = ["Vielen Dank.", "Bitte sofort ausführen.", "Eilt sehr.", "Dankeschön."];
+
+        function speakNatural(text, isTest = false) {
             if(!voiceSettings.active && !isTest) return;
             if(synth.speaking) return;
 
-            // Gong / Chime
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.frequency.setValueAtTime(554.37, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            // Professioneller Doppel-Gong
+            const o1 = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o1.frequency.setValueAtTime(554.37, audioCtx.currentTime); // C#
+            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+            o1.connect(g); g.connect(audioCtx.destination);
+            o1.start(); o1.stop(audioCtx.currentTime + 0.8);
 
             setTimeout(() => {
                 const u = new SpeechSynthesisUtterance(text);
-                const v = voices.find(x => x.name === voiceSettings.name);
+                const v = synth.getVoices().find(x => x.name === voiceSettings.name);
                 if(v) u.voice = v;
 
-                u.pitch = voiceSettings.tone === 'friendly' ? 1.02 : 0.85;
-                u.rate = voiceSettings.tone === 'friendly' ? 0.88 : 1.05;
-                
-                // Wir nutzen hier das Standard-Ende, um Effekte zu steuern
-                u.onend = () => { if(isTest) finishTestUI(); };
+                u.pitch = 0.95; 
+                u.rate = 0.82; // Langsamere, menschliche Geschwindigkeit
+
+                u.onend = () => { if(isTest) document.getElementById('btn-voice-test').classList.remove('voice-active-ui'); };
                 synth.speak(u);
-            }, 600);
+            }, 900);
         }
 
         function initVoices() {
-            voices = synth.getVoices().filter(v => v.lang.startsWith('de'));
+            const vRaw = synth.getVoices().filter(v => v.lang.startsWith('de'));
             const sel = document.getElementById('voice-gender');
             if(sel) {
-                // Priorisiere Microsoft Online / Google Stimmen
-                voices.sort((a,b) => {
-                    const aNeural = a.name.includes('Neural') || a.name.includes('Online');
-                    const bNeural = b.name.includes('Neural') || b.name.includes('Online');
-                    return bNeural - aNeural;
+                // PRIORISIERE GOOGLE UND NEURAL
+                vRaw.sort((a,b) => {
+                    const aPrio = a.name.includes('Google') || a.name.includes('Neural') || a.name.includes('Natural');
+                    const bPrio = b.name.includes('Google') || b.name.includes('Neural') || b.name.includes('Natural');
+                    return bPrio - aPrio;
                 });
-                sel.innerHTML = voices.map(v => `<option value="${v.name}">${(v.name.includes('Neural') || v.name.includes('Online')) ? '👤 KI: ' : '💻 '} ${v.name}</option>`).join('');
+                sel.innerHTML = vRaw.map(v => `<option value="${v.name}">${(v.name.includes('Google') || v.name.includes('Neural')) ? '⭐ NEURAL: ' : '💻 '} ${v.name}</option>`).join('');
                 if(voiceSettings.name) sel.value = voiceSettings.name;
+                else if(vRaw.length > 0) voiceSettings.name = vRaw[0].name;
             }
         }
         if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = initVoices;
 
         // --- UI ACTIONS ---
-        window.runVoiceTest = () => {
-            const btn = document.getElementById('btn-voice-test');
-            btn.classList.add('test-active');
-            document.getElementById('voice-test-text').textContent = "Neural Engine aktiv...";
-            const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
-            speakNeural(`${randomPhrase} Dies ist ein Test der menschlichen Sprachausgabe. Das System ist bereit.`, true);
+        window.runAcousticTest = () => {
+            document.getElementById('btn-voice-test').classList.add('voice-active-ui');
+            const msg = "Achtung. Dies ist ein Test des neuronalen Durchsagesystems. Die akustische Übertragung in der Halle ist nun aktiv.";
+            speakNatural(msg, true);
         };
-
-        function finishTestUI() {
-            const btn = document.getElementById('btn-voice-test');
-            btn.classList.remove('test-active');
-            document.getElementById('voice-test-text').textContent = "Human Voice Test";
-        }
 
         window.setViewMode = (mode) => {
             view = mode;
             document.querySelectorAll('main').forEach(m => m.classList.add('hidden'));
             document.getElementById(`view-${mode}`).classList.remove('hidden');
+            document.querySelectorAll('nav button').forEach(b => {
+                const active = b.id === `btn-mode-${mode}`;
+                b.className = `px-5 py-2 rounded-lg text-xs font-black uppercase transition-all ${active ? 'bg-brand-600 text-white shadow-xl' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-zinc-800'}`;
+            });
             render();
         };
 
@@ -302,7 +282,9 @@
             const nowMin = now.getHours() * 60 + now.getMinutes();
             const active = orders.filter(o => o.status !== 1).sort((a,b) => {
                 if(a.status === 2 && b.status !== 2) return -1;
-                return getMin(a.uhrzeit) - getMin(b.uhrzeit);
+                const minA = (a.uhrzeit.split(':')[0]*60) + (a.uhrzeit.split(':')[1]*1);
+                const minB = (b.uhrzeit.split(':')[0]*60) + (b.uhrzeit.split(':')[1]*1);
+                return minA - minB;
             });
             const archived = orders.filter(o => o.status === 1 && o.finishedAt?.toDate().toISOString().split('T')[0] === archiveDate);
 
@@ -310,51 +292,57 @@
             if(view === 'tv') renderTV(active, nowMin);
             if(view === 'tablet') renderTablet(active);
 
-            // VOICE ANNOUNCEMENT LOGIC
-            const overdue = active.filter(o => o.status === 0 && getMin(o.uhrzeit) < nowMin);
+            // DURCHSAGE LOGIK (VARIABLE SÄTZE)
+            const overdue = active.filter(o => o.status === 0 && ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin);
             if(overdue.length > 0 && (Date.now() - lastVoiceTime > voiceSettings.interval * 60000)) {
+                const i = introPhrases[Math.floor(Math.random()*introPhrases.length)];
+                const m = midPhrases[Math.floor(Math.random()*midPhrases.length)];
+                const e = endPhrases[Math.floor(Math.random()*endPhrases.length)];
+                
                 let msg = overdue.length === 1 
-                    ? `Hallo Team... Ein kleiner Hinweis. Die Auslagerung für ${overdue[0].uhrzeit} Uhr ist bereits überfällig. Bitte schaut einmal kurz nach.` 
-                    : `Entschuldigung... Es liegen aktuell ${overdue.length} überfällige Auslagerungen vor. Bitte prüft zeitnah die Warteschlange. Dankeschön.`;
-                speakNeural(msg);
+                    ? `${i} ${m} ${overdue[0].uhrzeit} Uhr ist überfällig. ${e}` 
+                    : `${i} es liegen mehrere überfällige Auslagerungen vor. Bitte Warteschlange prüfen. ${e}`;
+                
+                speakNatural(msg);
                 lastVoiceTime = Date.now();
             }
 
-            document.getElementById('tv-kpi-open').textContent = active.filter(o => o.status === 0).length;
-            document.getElementById('tv-kpi-error').textContent = active.filter(o => o.status === 2).length;
+            if(document.getElementById('tv-kpi-open')) document.getElementById('tv-kpi-open').textContent = active.filter(o => o.status === 0).length;
+            if(document.getElementById('tv-kpi-error')) document.getElementById('tv-kpi-error').textContent = active.filter(o => o.status === 2).length;
             lucide.createIcons();
         }
 
         function renderOperator(active, archived, nowMin) {
-            document.getElementById('table-active').innerHTML = active.map(o => `
+            document.getElementById('table-active').innerHTML = active.map(o => {
+                const isLate = ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin;
+                return `
                 <tr class="hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors ${o.status === 2 ? 'bg-red-50 dark:bg-red-900/10' : ''}">
-                    <td class="px-6 py-4 font-mono font-black text-xs">${esc(o.artikelnummer)}</td>
+                    <td class="px-6 py-4 font-black text-sm">${esc(o.artikelnummer)}</td>
                     <td class="px-6 py-4 font-bold text-[10px] uppercase">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</td>
-                    <td class="px-6 py-4 font-mono text-xs ${getMin(o.uhrzeit) < nowMin ? 'text-amber-500 font-bold' : ''}">${o.uhrzeit}</td>
+                    <td class="px-6 py-4 font-mono text-sm ${isLate ? 'text-amber-500 font-bold' : ''}">${o.uhrzeit}</td>
                     <td class="px-6 py-4 text-right">
                         <button onclick="cycleStatus('${o.id}', ${o.status})" class="p-2 bg-slate-100 dark:bg-zinc-800 rounded-lg hover:bg-emerald-500 hover:text-white transition-all"><i data-lucide="check" class="w-4 h-4"></i></button>
                     </td>
-                </tr>
-            `).join('');
+                </tr>`;
+            }).join('');
             document.getElementById('table-archive').innerHTML = archived.map(o => `
-                <tr class="opacity-40">
-                    <td class="px-6 py-2 font-mono">${esc(o.artikelnummer)}</td>
-                    <td class="px-6 py-2 uppercase text-[9px]">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</td>
+                <tr class="opacity-30">
+                    <td class="px-6 py-2 font-bold">${esc(o.artikelnummer)}</td>
+                    <td class="px-6 py-2 uppercase text-[9px] font-bold">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</td>
                     <td class="px-6 py-2 text-right"><button onclick="cycleStatus('${o.id}', 1)" class="hover:text-emerald-500"><i data-lucide="rotate-ccw" class="w-3 h-3"></i></button></td>
-                </tr>
-            `).join('');
+                </tr>`).join('');
         }
 
         function renderTV(active, nowMin) {
             document.getElementById('tv-grid').innerHTML = active.map(o => {
-                const late = getMin(o.uhrzeit) < nowMin;
+                const isLate = ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin;
                 return `
-                <div class="tv-card-row flex items-center border-2 rounded-2xl bg-white dark:bg-zinc-950 pr-8 shadow-sm mb-3 ${o.status === 2 ? 'border-red-500 glow-error' : 'border-slate-100 dark:border-zinc-900'}">
-                    <div class="w-4 h-full ${o.status === 2 ? 'bg-red-500' : late ? 'bg-amber-500' : 'bg-slate-300'}"></div>
-                    <div class="flex-grow flex items-center justify-between pl-8 font-black">
-                        <div class="text-3xl font-mono">${esc(o.artikelnummer)}</div>
-                        <div class="flex items-center gap-4 text-xl uppercase"><span class="text-slate-400">${esc(o.lagerort)}</span><i data-lucide="arrow-right" class="w-8 h-8 text-emerald-500"></i><span>${esc(o.zielort)}</span></div>
-                        <div class="text-right text-3xl font-mono ${late ? 'text-amber-500' : ''}">${o.uhrzeit}</div>
+                <div class="tv-card-row flex items-center border-4 rounded-[25px] bg-white dark:bg-zinc-950 pr-10 shadow-lg mb-4 ${o.status === 2 ? 'border-red-500 glow-error' : 'border-slate-100 dark:border-zinc-900'}">
+                    <div class="w-4 h-full ${o.status === 2 ? 'bg-red-500' : isLate ? 'bg-amber-500' : 'bg-slate-300'}"></div>
+                    <div class="flex-grow flex items-center justify-between pl-10 font-black">
+                        <div class="text-4xl font-mono">${esc(o.artikelnummer)}</div>
+                        <div class="flex items-center gap-6 text-2xl uppercase"><span class="text-slate-400">${esc(o.lagerort)}</span><i data-lucide="radio" class="w-10 h-10 text-emerald-500"></i><span>${esc(o.zielort)}</span></div>
+                        <div class="text-right text-4xl font-mono ${isLate ? 'text-amber-500' : ''}">${o.uhrzeit}</div>
                     </div>
                 </div>`;
             }).join('');
@@ -362,21 +350,20 @@
 
         function renderTablet(active) {
             document.getElementById('tablet-grid').innerHTML = active.map(o => `
-                <div class="bg-white dark:bg-zinc-950 border-2 ${o.status === 2 ? 'border-red-500' : 'border-slate-100 dark:border-zinc-900'} p-4 rounded-3xl flex items-center justify-between h-36">
-                    <div class="bg-white p-2 rounded-xl border shrink-0"><svg class="bc-svg" data-val="${o.artikelnummer}"></svg></div>
+                <div class="bg-white dark:bg-zinc-950 border-2 ${o.status === 2 ? 'border-red-500' : 'border-slate-100 dark:border-zinc-900'} p-5 rounded-[40px] flex items-center justify-between h-40 shadow-sm">
+                    <div class="bg-white p-3 rounded-2xl border shrink-0"><svg class="bc-svg" data-val="${o.artikelnummer}"></svg></div>
                     <div class="text-center flex-grow px-2 font-black">
-                        <p class="text-lg uppercase tracking-tighter">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</p>
-                        <p class="text-[10px] text-slate-400 mt-1 uppercase">${esc(o.schicht)} | ${o.uhrzeit} UHR</p>
+                        <p class="text-xl uppercase tracking-tighter">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</p>
+                        <p class="text-xs text-slate-400 mt-2 uppercase font-bold tracking-widest">${o.uhrzeit} UHR</p>
                     </div>
-                    <button onclick="cycleStatus('${o.id}', ${o.status})" class="w-20 h-20 bg-emerald-500 text-white rounded-3xl flex items-center justify-center shadow-lg active:scale-90 transition-all">
-                        <i data-lucide="check" class="w-10 h-10 stroke-[4]"></i>
+                    <button onclick="cycleStatus('${o.id}', ${o.status})" class="w-24 h-24 bg-emerald-500 text-white rounded-[35px] flex items-center justify-center shadow-lg active:scale-95 transition-all">
+                        <i data-lucide="check" class="w-12 h-12 stroke-[4]"></i>
                     </button>
-                </div>
-            `).join('');
-            document.querySelectorAll('.bc-svg').forEach(el => JsBarcode(el, el.getAttribute('data-val'), { format: "CODE128", width: 2, height: 60, displayValue: true, fontSize: 14 }));
+                </div>`).join('');
+            document.querySelectorAll('.bc-svg').forEach(el => JsBarcode(el, el.getAttribute('data-val'), { format: "CODE128", width: 2, height: 70, displayValue: true, fontSize: 16 }));
         }
 
-        // --- INIT ---
+        // --- CORE FUNCTIONS ---
         function initTime() {
             const n = new Date();
             document.getElementById('uhrzeit').value = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
@@ -390,23 +377,28 @@
 
         document.getElementById('auftrag-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            await addDoc(ordersCol, {
-                artikelnummer: document.getElementById('artikelnummer').value.trim(),
-                lagerort: document.getElementById('lagerort').value.trim().toUpperCase(),
-                zielort: document.getElementById('zielort').value.trim().toUpperCase(),
-                uhrzeit: document.getElementById('uhrzeit').value,
-                schicht: document.getElementById('schicht').value,
-                dringlich: document.getElementById('dringlich').checked,
-                status: 0, createdAt: Timestamp.now()
-            });
-            e.target.reset(); initTime();
+            const btn = document.getElementById('btn-submit');
+            btn.disabled = true;
+            try {
+                await addDoc(ordersCol, {
+                    artikelnummer: document.getElementById('artikelnummer').value.trim(),
+                    lagerort: document.getElementById('lagerort').value.trim().toUpperCase(),
+                    zielort: document.getElementById('zielort').value.trim().toUpperCase(),
+                    uhrzeit: document.getElementById('uhrzeit').value,
+                    schicht: document.getElementById('schicht').value,
+                    dringlich: document.getElementById('dringlich').checked,
+                    status: 0, createdAt: Timestamp.now()
+                });
+                e.target.reset(); initTime();
+            } catch (err) { alert("Senden fehlgeschlagen!"); }
+            btn.disabled = false;
         });
 
         document.getElementById('voice-active').addEventListener('change', (e) => { voiceSettings.active = e.target.checked; saveV(); });
-        document.getElementById('voice-gender').addEventListener('change', (e) => { voiceSettings.name = e.target.value; saveV(); speakNeural("Systemstimme bereit.", true); });
-        document.getElementById('voice-tone').addEventListener('change', (e) => { voiceSettings.tone = e.target.value; saveV(); });
+        document.getElementById('voice-gender').addEventListener('change', (e) => { voiceSettings.name = e.target.value; saveV(); speakNatural("KI-Stimme aktiviert.", true); });
+        document.getElementById('voice-reverb').addEventListener('input', (e) => { voiceSettings.reverb = e.target.value; updateReverbBuffer(); saveV(); });
         document.getElementById('voice-interval').addEventListener('change', (e) => { voiceSettings.interval = e.target.value; saveV(); });
-        function saveV() { localStorage.setItem('voice_v3', JSON.stringify(voiceSettings)); }
+        function saveV() { localStorage.setItem('voice_v5', JSON.stringify(voiceSettings)); }
         document.getElementById('archive-date-filter').addEventListener('change', (e) => { archiveDate = e.target.value; render(); });
 
         function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
