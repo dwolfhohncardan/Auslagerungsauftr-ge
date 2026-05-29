@@ -155,7 +155,8 @@
                 <span class="text-4xl font-black uppercase tracking-tighter text-brand-600">Hallen-Monitor</span>
                 <div class="flex gap-12 border-l-4 pl-12 border-slate-100 dark:border-zinc-900 font-black">
                     <div class="text-center"><p class="text-[12px] text-slate-400 mb-1">OFFEN</p><p id="tv-kpi-open" class="text-5xl">0</p></div>
-                    <div class="text-center"><p class="text-[12px] text-red-500 mb-1">KRITISCH</p><p id="tv-kpi-error" class="text-5xl text-red-500">0</p></div>
+                    <!-- „KRITISCH“ wurde im UI zu „ÜBERFÄLLIG“ umformuliert -->
+                    <div class="text-center"><p class="text-[12px] text-red-500 mb-1 font-bold">ÜBERFÄLLIG</p><p id="tv-kpi-error" class="text-5xl text-red-500">0</p></div>
                 </div>
             </div>
             
@@ -323,7 +324,7 @@
             lucide.createIcons();
         };
 
-        // --- ACOUSTIC WARNTON ENGINE (STRENG KEINE SIRENE) ---
+        // --- ACOUSTIC WARNTON ENGINE (AGRESSIVER DURCHDRINGENDER CHIME) ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
         // Filter Chain
@@ -349,7 +350,7 @@
         bandpass.connect(reverbNode);
         reverbNode.connect(audioCtx.destination);
 
-        // Industrieller, nicht-aggressiver Doppel-Gong (E5 + A5 Harmonien, keine Sirene)
+        // Industrieller, durchdringender Doppel-Gong (Oszillator-Typ 'triangle' & Peak Gain '0.6' für maximale Durchdringung im Lager)
         function playWarningChime(isTest = false) {
             if(!voiceSettings.active && !isTest) return;
 
@@ -359,26 +360,26 @@
 
             const now = audioCtx.currentTime;
 
-            // Erster Ton: E5 (659.25 Hz)
+            // Erster Ton: G5 (783.99 Hz)
             const osc1 = audioCtx.createOscillator();
             const gain1 = audioCtx.createGain();
-            osc1.type = 'sine';
-            osc1.frequency.setValueAtTime(659.25, now);
+            osc1.type = 'triangle';
+            osc1.frequency.setValueAtTime(783.99, now);
             gain1.gain.setValueAtTime(0.001, now);
-            gain1.gain.exponentialRampToValueAtTime(0.12, now + 0.05);
+            gain1.gain.exponentialRampToValueAtTime(0.6, now + 0.05); // Deutlich lauter (0.6 statt 0.12)
             gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
             osc1.connect(gain1);
             gain1.connect(bandpass);
             osc1.start(now);
             osc1.stop(now + 0.6);
 
-            // Zweiter Ton: A5 (880.00 Hz) - dezent zeitversetzt für weiche Gongwirkung
+            // Zweiter Ton: C6 (1046.50 Hz) - dezent zeitversetzt, sehr durchdringend
             const osc2 = audioCtx.createOscillator();
             const gain2 = audioCtx.createGain();
-            osc2.type = 'sine';
-            osc2.frequency.setValueAtTime(880.00, now + 0.2);
+            osc2.type = 'triangle';
+            osc2.frequency.setValueAtTime(1046.50, now + 0.2);
             gain2.gain.setValueAtTime(0.001, now);
-            gain2.gain.exponentialRampToValueAtTime(0.12, now + 0.25);
+            gain2.gain.exponentialRampToValueAtTime(0.6, now + 0.25); // Deutlich lauter (0.6 statt 0.12)
             gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
             osc2.connect(gain2);
             gain2.connect(bandpass);
@@ -427,8 +428,8 @@
         let firstLoad = true;
 
         // Komponente 4: Synthetische Klangerzeugung (Web Audio API)
-        // Normaler Sound: Dynamischer Sinus-Gleitton
-        window.playNewOrderSound = () => {
+        // Lokale Deklaration (Scope Fehler behoben)
+        const playNewOrderSound = () => {
             if (audioCtx.state === 'suspended') audioCtx.resume();
 
             const osc = audioCtx.createOscillator();
@@ -438,7 +439,7 @@
             osc.frequency.setValueAtTime(880, audioCtx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.5);
 
-            gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); 
+            gainNode.gain.setValueAtTime(0.6, audioCtx.currentTime); 
             gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
 
             osc.connect(gainNode);
@@ -447,9 +448,10 @@
             osc.start();
             osc.stop(audioCtx.currentTime + 0.5);
         };
+        window.playNewOrderSound = playNewOrderSound;
 
-        // Dringender Sound: Rhythmisches Warnsignal (4 schnelle Square-Beeps)
-        window.playUrgentSound = () => {
+        // Dringender Sound: Rhythmisches Warnsignal (Erhöhte Grundlautstärke auf 0.5)
+        const playUrgentSound = () => {
             if (audioCtx.state === 'suspended') audioCtx.resume();
 
             const beepDuration = 0.1; 
@@ -467,7 +469,7 @@
                 const beepEnd = beepStart + beepDuration;
 
                 gainNode.gain.setValueAtTime(0.001, now);
-                gainNode.gain.setValueAtTime(0.12, beepStart); 
+                gainNode.gain.setValueAtTime(0.5, beepStart); 
                 gainNode.gain.exponentialRampToValueAtTime(0.001, beepEnd);
 
                 osc.connect(gainNode);
@@ -477,6 +479,7 @@
                 osc.stop(beepEnd);
             }
         };
+        window.playUrgentSound = playUrgentSound;
 
         // --- LAYOUT ENGINE (RESPONSIVITÄT & DISPLAY-KALIBRIERUNG) ---
         function applyLayoutSettings() {
@@ -634,8 +637,8 @@
 
         window.cycleStatus = async (id, cur) => {
             const ref = doc(db, "orders", id);
-            let next = cur === 0 ? { status: 1, finishedAt: Timestamp.now() } : 
-                       cur === 1 ? { status: 2, finishedAt: null } : { status: 0 };
+            // Störungs-Status entfernt: Wechselt nun ausschließlich zwischen 0 (Offen) und 1 (Erledigt)
+            let next = cur === 0 ? { status: 1, finishedAt: Timestamp.now() } : { status: 0, finishedAt: null };
             await updateDoc(ref, next);
         };
 
@@ -646,17 +649,16 @@
             
             // Standard-Filter (erledigte fliegen raus) für Operator & TV
             const active = orders.filter(o => o.status !== 1).sort((a,b) => {
-                if(a.status === 2 && b.status !== 2) return -1;
                 const minA = (a.uhrzeit.split(':')[0]*60) + (a.uhrzeit.split(':')[1]*1);
                 const minB = (b.uhrzeit.split(':')[0]*60) + (b.uhrzeit.split(':')[1]*1);
                 return minA - minB;
             });
             const archived = orders.filter(o => o.status === 1 && o.finishedAt?.toDate().toISOString().split('T')[0] === archiveDate);
 
-            // Tablet-spezifische Liste: Erledigte bleiben, rutschen aber nach unten (Kritisch -> Offen -> Erledigt)
+            // Tablet-spezifische Liste: Erledigte bleiben, rutschen aber nach unten (Offen -> Erledigt)
             const tabletOrders = [...orders].sort((a, b) => {
-                const scoreA = a.status === 2 ? 0 : a.status === 0 ? 1 : 2;
-                const scoreB = b.status === 2 ? 0 : b.status === 0 ? 1 : 2;
+                const scoreA = a.status === 0 ? 0 : 1;
+                const scoreB = b.status === 0 ? 0 : 1;
                 if (scoreA !== scoreB) return scoreA - scoreB;
                 
                 const minA = (a.uhrzeit.split(':')[0]*60) + (a.uhrzeit.split(':')[1]*1);
@@ -675,8 +677,14 @@
                 lastVoiceTime = Date.now();
             }
 
-            if(document.getElementById('tv-kpi-open')) document.getElementById('tv-kpi-open').textContent = active.filter(o => o.status === 0).length;
-            if(document.getElementById('tv-kpi-error')) document.getElementById('tv-kpi-error').textContent = active.filter(o => o.status === 2).length;
+            // Dynamische KPI-Berechnung für den TV-Monitor
+            if(document.getElementById('tv-kpi-open') && document.getElementById('tv-kpi-error')) {
+                const lateCount = active.filter(o => o.status === 0 && ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin).length;
+                const openCount = active.filter(o => o.status === 0 && ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) >= nowMin).length;
+                
+                document.getElementById('tv-kpi-open').textContent = openCount;
+                document.getElementById('tv-kpi-error').textContent = lateCount; // „ÜBERFÄLLIG“-KPI Counter
+            }
             lucide.createIcons();
         }
 
@@ -684,11 +692,14 @@
             document.getElementById('table-active').innerHTML = active.map(o => {
                 const isLate = ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin;
                 const urgentBadge = o.dringlich ? `<span class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-black bg-red-600 text-white animate-pulse">EILT</span>` : '';
+                
+                // Überfällige Aufträge werden dezent rot-pastell eingefärbt
+                const rowBg = isLate ? 'bg-red-50/50 dark:bg-red-900/10' : '';
                 return `
-                <tr class="hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors ${o.status === 2 ? 'bg-red-50/70 dark:bg-red-900/10' : ''}">
+                <tr class="hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors ${rowBg}">
                     <td class="px-6 py-4 font-black text-sm flex items-center">${esc(o.artikelnummer)}${urgentBadge}</td>
                     <td class="px-6 py-4 font-bold text-[10px] uppercase">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</td>
-                    <td class="px-6 py-4 font-mono text-sm ${isLate ? 'text-amber-500 font-bold' : ''}">${o.uhrzeit}</td>
+                    <td class="px-6 py-4 font-mono text-sm ${isLate ? 'text-red-500 font-bold' : ''}">${o.uhrzeit}</td>
                     <td class="px-6 py-4 text-right">
                         <button onclick="cycleStatus('${o.id}', ${o.status})" class="p-2 bg-slate-100 dark:bg-zinc-800 rounded-lg hover:bg-emerald-500 hover:text-white transition-all"><i data-lucide="check" class="w-4 h-4"></i></button>
                     </td>
@@ -706,30 +717,42 @@
             document.getElementById('tv-grid').innerHTML = active.map(o => {
                 const isLate = ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin;
                 const urgentBadge = o.dringlich ? `<span class="px-3 py-1 bg-red-600 text-white text-xs font-black rounded-lg animate-pulse mr-4">EILT</span>` : '';
+                
+                // Überfällige Zeilen erhalten die intensiv rot pulsierende Visualisierung (ehem. Störung)
+                const cardStyle = isLate 
+                    ? 'border-red-500 glow-error bg-red-50/70 dark:bg-zinc-950' 
+                    : o.dringlich ? 'border-red-700/60' : 'border-slate-200 dark:border-zinc-900';
+                
+                const barColor = isLate ? 'bg-red-500 animate-pulse' : o.dringlich ? 'bg-red-600' : 'bg-slate-300';
+
                 return `
-                <div class="tv-card-row flex items-center border-4 rounded-[25px] bg-white dark:bg-zinc-950 pr-10 shadow-lg mb-4 ${o.status === 2 ? 'border-red-500 glow-error bg-red-50/70 dark:bg-zinc-950' : o.dringlich ? 'border-red-700/60' : 'border-slate-200 dark:border-zinc-900'}" style="height: var(--tv-card-height) !important;">
-                    <div class="w-4 h-full ${o.status === 2 ? 'bg-red-500' : o.dringlich ? 'bg-red-600' : isLate ? 'bg-amber-500' : 'bg-slate-300'}"></div>
+                <div class="tv-card-row flex items-center border-4 rounded-[25px] overflow-hidden bg-white dark:bg-zinc-950 pr-10 shadow-lg mb-4 ${cardStyle}" style="height: var(--tv-card-height) !important;">
+                    <div class="w-4 h-full ${barColor}"></div>
                     <div class="flex-grow flex items-center justify-between pl-10 font-black" style="font-size: calc(1rem * var(--tv-font-scale));">
                         <div class="text-[2.25em] font-mono flex items-center">${urgentBadge}${esc(o.artikelnummer)}</div>
                         <div class="flex items-center gap-6 text-[1.5em] uppercase"><span class="text-slate-400">${esc(o.lagerort)}</span><i data-lucide="radio" class="w-[1.25em] h-[1.25em] text-emerald-500"></i><span>${esc(o.zielort)}</span></div>
-                        <div class="text-right text-[2.25em] font-mono ${isLate ? 'text-amber-500' : ''}">${o.uhrzeit}</div>
+                        <div class="text-right text-[2.25em] font-mono ${isLate ? 'text-red-500' : ''}">${o.uhrzeit}</div>
                     </div>
                 </div>`;
             }).join('');
         }
 
         function renderTablet(tabletList) {
+            const now = new Date();
+            const nowMin = now.getHours() * 60 + now.getMinutes();
+            
             const bcHeight = Math.max(35, Math.min(100, Math.round(layoutSettings.tabletHeight * 0.35)));
             const bcFontSize = Math.max(10, Math.min(20, Math.round(14 * (layoutSettings.tabletFont / 100))));
 
             document.getElementById('tablet-grid').innerHTML = tabletList.map(o => {
                 const isCompleted = o.status === 1;
-                const isCritical = o.status === 2;
+                const isLate = !isCompleted && (((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin);
 
                 let borderStyle = "";
                 if (isCompleted) {
                     borderStyle = "border-slate-200 dark:border-zinc-800 bg-slate-100/40 dark:bg-zinc-900/10 opacity-35 select-none";
-                } else if (isCritical) {
+                } else if (isLate) {
+                    // Überfällige Aufträge auf dem Tablet rot glühend/pulsierend darstellen
                     borderStyle = "border-red-500 bg-red-50/70 dark:bg-zinc-950 glow-error";
                 } else if (o.dringlich) {
                     borderStyle = "border-red-600/70 bg-red-50/10 dark:bg-red-950/10";
@@ -738,12 +761,10 @@
                 }
 
                 return `
-                <!-- Die gesamte Karte dient nun als komfortable Klickfläche zum Durchschalten -->
                 <div onclick="cycleStatus('${o.id}', ${o.status})" class="border-2 ${borderStyle} p-3 rounded-[32px] flex items-center justify-between shadow-sm relative overflow-hidden cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-all" style="height: var(--tablet-card-height); font-size: calc(1rem * var(--tablet-font-scale));">
                     ${o.dringlich && !isCompleted ? `<div class="absolute top-0 right-0 bg-red-600 text-white text-[8px] font-black px-3 py-0.5 rounded-bl-xl uppercase tracking-widest animate-pulse">EILT</div>` : ''}
                     ${isCompleted ? `<div class="absolute top-0 right-0 bg-slate-500 text-white text-[8px] font-black px-3 py-0.5 rounded-bl-xl uppercase tracking-widest">ERLEDIGT</div>` : ''}
                     
-                    <!-- Barcode Box mit overflow-hidden schützt vor herausragenden eckigen SVG-Kanten -->
                     <div class="bg-white p-2 rounded-2xl border border-slate-200 dark:border-zinc-300 shrink-0 flex items-center justify-center h-[90%] max-h-[140px] overflow-hidden aspect-[1.8/1]">
                         <svg class="bc-svg w-full h-full" data-val="${o.artikelnummer}" style="max-height: 100%; display: block;"></svg>
                     </div>
@@ -753,11 +774,10 @@
                         <p class="text-[0.70em] text-slate-400 mt-2 uppercase font-bold tracking-widest leading-none">${o.uhrzeit} UHR</p>
                     </div>
 
-                    <!-- Steriles, minimalistisches Statusicon ersetzt den alten grünen Button -->
                     <div class="shrink-0 flex items-center justify-center pr-1">
                         ${isCompleted ? 
                             `<div class="w-8 h-8 rounded-full border-2 border-slate-400 dark:border-zinc-600 flex items-center justify-center text-slate-400 dark:text-zinc-600"><i data-lucide="check" class="w-4 h-4 stroke-[3]"></i></div>` : 
-                            isCritical ? 
+                            isLate ? 
                             `<div class="w-8 h-8 rounded-full border-2 border-red-500 flex items-center justify-center text-red-500 animate-pulse"><i data-lucide="alert-triangle" class="w-4 h-4"></i></div>` :
                             `<div class="w-8 h-8 rounded-full border-2 border-slate-300 dark:border-zinc-700 flex items-center justify-center text-slate-400 dark:text-zinc-500"><i data-lucide="arrow-right" class="w-4 h-4"></i></div>`
                         }
@@ -765,7 +785,6 @@
                 </div>`;
             }).join('');
             
-            // Barcodes mit transparentem Hintergrund generieren, um eckige Überlagerungen zu korrigieren
             document.querySelectorAll('.bc-svg').forEach(el => {
                 JsBarcode(el, el.getAttribute('data-val'), { 
                     format: "CODE128", 
@@ -872,7 +891,7 @@
         applyLayoutSettings();
         initTime();
         
-        // Dynamisches Datum im Header initialisieren (e.g. 29. Mai 2026)
+        // Dynamisches Datum im Header initialisieren
         const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' };
         document.getElementById('header-date').textContent = new Date().toLocaleDateString('de-DE', dateOptions);
         
