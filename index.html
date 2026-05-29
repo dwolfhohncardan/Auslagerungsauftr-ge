@@ -71,6 +71,11 @@
                                 <option>Frühschicht</option><option>Spätschicht</option><option>Nachtschicht</option>
                             </select>
                         </div>
+                        <!-- Dringlich Checkbox (Behebt den JS-Error beim Absenden) -->
+                        <div class="flex items-center space-x-2 py-1">
+                            <input type="checkbox" id="dringlich" class="w-4 h-4 rounded border-slate-200 dark:border-zinc-800 text-brand-600 focus:ring-brand-500 accent-brand-600">
+                            <label for="dringlich" class="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-zinc-400 cursor-pointer select-none">🚨 Hohe Priorität (Eilt)</label>
+                        </div>
                         <button type="submit" id="btn-submit" class="w-full py-4 bg-brand-600 text-white font-black rounded-xl hover:bg-brand-700 transition-all uppercase text-[10px] tracking-widest shadow-lg">Auftrag Senden</button>
                     </form>
                 </div>
@@ -174,8 +179,10 @@
         let orders = [];
         let view = 'operator';
         let archiveDate = new Date().toISOString().split('T')[0];
-        let lastVoiceTime = 0;
+        
+        // Letzte Sprachausgabe initial leicht verzögern, um unerwünschten Gong direkt beim Laden der Seite zu verhindern
         let voiceSettings = JSON.parse(localStorage.getItem('voice_v5')) || { active: true, name: '', interval: 2, reverb: 40 };
+        let lastVoiceTime = Date.now() - (voiceSettings.interval * 60000) + 10000; // 10 Sekunden Delay beim ersten Laden
 
         // --- ACOUSTIC NEURAL ENGINE (NO MICROSOFT DEFAULT) ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -213,13 +220,21 @@
             if(!voiceSettings.active && !isTest) return;
             if(synth.speaking) return;
 
-            // Professioneller Doppel-Gong
+            // Aktivierung des Audio-Kontexts bei Browser-Einschränkungen (Autoplay-Policy)
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            // Professioneller Doppel-Gong (Durch Filter/Reverb geschleift für echten Halleneffekt)
             const o1 = audioCtx.createOscillator();
             const g = audioCtx.createGain();
             o1.frequency.setValueAtTime(554.37, audioCtx.currentTime); // C#
             g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
-            o1.connect(g); g.connect(audioCtx.destination);
-            o1.start(); o1.stop(audioCtx.currentTime + 0.8);
+            
+            o1.connect(g); 
+            g.connect(bandpass); 
+            o1.start(); 
+            o1.stop(audioCtx.currentTime + 0.8);
 
             setTimeout(() => {
                 const u = new SpeechSynthesisUtterance(text);
@@ -229,7 +244,7 @@
                 u.pitch = 0.95; 
                 u.rate = 0.82; // Langsamere, menschliche Geschwindigkeit
 
-                u.onend = () => { if(isTest) document.getElementById('btn-voice-test').classList.remove('voice-active-ui'); };
+                u.onend = () => { if(isTest) { const btn = document.getElementById('btn-voice-test'); if(btn) btn.classList.remove('voice-active-ui'); } };
                 synth.speak(u);
             }, 900);
         }
@@ -245,15 +260,23 @@
                     return bPrio - aPrio;
                 });
                 sel.innerHTML = vRaw.map(v => `<option value="${v.name}">${(v.name.includes('Google') || v.name.includes('Neural')) ? '⭐ NEURAL: ' : '💻 '} ${v.name}</option>`).join('');
-                if(voiceSettings.name) sel.value = voiceSettings.name;
-                else if(vRaw.length > 0) voiceSettings.name = vRaw[0].name;
+                
+                // Zuverlässiger Fallback für gespeicherte Stimmen
+                if(voiceSettings.name && vRaw.some(x => x.name === voiceSettings.name)) {
+                    sel.value = voiceSettings.name;
+                } else if(vRaw.length > 0) {
+                    voiceSettings.name = vRaw[0].name;
+                    sel.value = voiceSettings.name;
+                }
             }
         }
+        initVoices();
         if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = initVoices;
 
         // --- UI ACTIONS ---
         window.runAcousticTest = () => {
-            document.getElementById('btn-voice-test').classList.add('voice-active-ui');
+            const btn = document.getElementById('btn-voice-test');
+            if(btn) btn.classList.add('voice-active-ui');
             const msg = "Achtung. Dies ist ein Test des neuronalen Durchsagesystems. Die akustische Übertragung in der Halle ist nun aktiv.";
             speakNatural(msg, true);
         };
@@ -315,9 +338,10 @@
         function renderOperator(active, archived, nowMin) {
             document.getElementById('table-active').innerHTML = active.map(o => {
                 const isLate = ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin;
+                const urgentBadge = o.dringlich ? `<span class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-black bg-red-600 text-white animate-pulse">EILT</span>` : '';
                 return `
                 <tr class="hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors ${o.status === 2 ? 'bg-red-50 dark:bg-red-900/10' : ''}">
-                    <td class="px-6 py-4 font-black text-sm">${esc(o.artikelnummer)}</td>
+                    <td class="px-6 py-4 font-black text-sm flex items-center">${esc(o.artikelnummer)}${urgentBadge}</td>
                     <td class="px-6 py-4 font-bold text-[10px] uppercase">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</td>
                     <td class="px-6 py-4 font-mono text-sm ${isLate ? 'text-amber-500 font-bold' : ''}">${o.uhrzeit}</td>
                     <td class="px-6 py-4 text-right">
@@ -336,11 +360,12 @@
         function renderTV(active, nowMin) {
             document.getElementById('tv-grid').innerHTML = active.map(o => {
                 const isLate = ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin;
+                const urgentBadge = o.dringlich ? `<span class="px-3 py-1 bg-red-600 text-white text-xs font-black rounded-lg animate-pulse mr-4">EILT</span>` : '';
                 return `
-                <div class="tv-card-row flex items-center border-4 rounded-[25px] bg-white dark:bg-zinc-950 pr-10 shadow-lg mb-4 ${o.status === 2 ? 'border-red-500 glow-error' : 'border-slate-100 dark:border-zinc-900'}">
-                    <div class="w-4 h-full ${o.status === 2 ? 'bg-red-500' : isLate ? 'bg-amber-500' : 'bg-slate-300'}"></div>
+                <div class="tv-card-row flex items-center border-4 rounded-[25px] bg-white dark:bg-zinc-950 pr-10 shadow-lg mb-4 ${o.status === 2 ? 'border-red-500 glow-error' : o.dringlich ? 'border-red-700/60' : 'border-slate-100 dark:border-zinc-900'}">
+                    <div class="w-4 h-full ${o.status === 2 ? 'bg-red-500' : o.dringlich ? 'bg-red-600' : isLate ? 'bg-amber-500' : 'bg-slate-300'}"></div>
                     <div class="flex-grow flex items-center justify-between pl-10 font-black">
-                        <div class="text-4xl font-mono">${esc(o.artikelnummer)}</div>
+                        <div class="text-4xl font-mono flex items-center">${urgentBadge}${esc(o.artikelnummer)}</div>
                         <div class="flex items-center gap-6 text-2xl uppercase"><span class="text-slate-400">${esc(o.lagerort)}</span><i data-lucide="radio" class="w-10 h-10 text-emerald-500"></i><span>${esc(o.zielort)}</span></div>
                         <div class="text-right text-4xl font-mono ${isLate ? 'text-amber-500' : ''}">${o.uhrzeit}</div>
                     </div>
@@ -349,8 +374,11 @@
         }
 
         function renderTablet(active) {
-            document.getElementById('tablet-grid').innerHTML = active.map(o => `
-                <div class="bg-white dark:bg-zinc-950 border-2 ${o.status === 2 ? 'border-red-500' : 'border-slate-100 dark:border-zinc-900'} p-5 rounded-[40px] flex items-center justify-between h-40 shadow-sm">
+            document.getElementById('tablet-grid').innerHTML = active.map(o => {
+                const borderClass = o.status === 2 ? 'border-red-500' : o.dringlich ? 'border-red-600/70 bg-red-50/10 dark:bg-red-950/10' : 'border-slate-100 dark:border-zinc-900';
+                return `
+                <div class="bg-white dark:bg-zinc-950 border-2 ${borderClass} p-5 rounded-[40px] flex items-center justify-between h-40 shadow-sm relative overflow-hidden">
+                    ${o.dringlich ? `<div class="absolute top-0 right-0 bg-red-600 text-white text-[8px] font-black px-3 py-0.5 rounded-bl-xl uppercase tracking-widest animate-pulse">EILT</div>` : ''}
                     <div class="bg-white p-3 rounded-2xl border shrink-0"><svg class="bc-svg" data-val="${o.artikelnummer}"></svg></div>
                     <div class="text-center flex-grow px-2 font-black">
                         <p class="text-xl uppercase tracking-tighter">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</p>
@@ -359,7 +387,8 @@
                     <button onclick="cycleStatus('${o.id}', ${o.status})" class="w-24 h-24 bg-emerald-500 text-white rounded-[35px] flex items-center justify-center shadow-lg active:scale-95 transition-all">
                         <i data-lucide="check" class="w-12 h-12 stroke-[4]"></i>
                     </button>
-                </div>`).join('');
+                </div>`;
+            }).join('');
             document.querySelectorAll('.bc-svg').forEach(el => JsBarcode(el, el.getAttribute('data-val'), { format: "CODE128", width: 2, height: 70, displayValue: true, fontSize: 16 }));
         }
 
@@ -387,10 +416,15 @@
                     uhrzeit: document.getElementById('uhrzeit').value,
                     schicht: document.getElementById('schicht').value,
                     dringlich: document.getElementById('dringlich').checked,
-                    status: 0, createdAt: Timestamp.now()
+                    status: 0, 
+                    createdAt: Timestamp.now()
                 });
-                e.target.reset(); initTime();
-            } catch (err) { alert("Senden fehlgeschlagen!"); }
+                e.target.reset(); 
+                initTime();
+            } catch (err) { 
+                console.error(err);
+                alert("Senden fehlgeschlagen!"); 
+            }
             btn.disabled = false;
         });
 
@@ -401,7 +435,12 @@
         function saveV() { localStorage.setItem('voice_v5', JSON.stringify(voiceSettings)); }
         document.getElementById('archive-date-filter').addEventListener('change', (e) => { archiveDate = e.target.value; render(); });
 
-        function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+        function esc(t) { 
+            if (t === undefined || t === null) return '';
+            const d = document.createElement('div'); 
+            d.textContent = t; 
+            return d.innerHTML; 
+        }
 
         setInterval(() => {
             const t = new Date().toLocaleTimeString('de-DE');
