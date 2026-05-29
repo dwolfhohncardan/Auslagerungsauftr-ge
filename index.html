@@ -21,8 +21,15 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
+        :root {
+            --tv-card-height: 85px;
+            --tv-font-scale: 1.0;
+            --tablet-cols: 2;
+            --tablet-card-height: 160px;
+            --tablet-font-scale: 1.0;
+        }
         body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        .tv-card-row { height: var(--tv-card-height, 75px) !important; }
+        .tv-card-row { height: var(--tv-card-height, 85px) !important; }
         .glow-error { box-shadow: 0 0 30px rgba(239, 68, 68, 0.6); animation: pulse-red 1.5s infinite; }
         @keyframes pulse-red { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.98); opacity: 0.8; } }
         .voice-active-ui { animation: pulse-emerald 1s infinite; background: #10b981 !important; color: white !important; }
@@ -71,7 +78,7 @@
                                 <option>Frühschicht</option><option>Spätschicht</option><option>Nachtschicht</option>
                             </select>
                         </div>
-                        <!-- Dringlich Checkbox (Behebt den JS-Error beim Absenden) -->
+                        <!-- Dringlich Checkbox -->
                         <div class="flex items-center space-x-2 py-1">
                             <input type="checkbox" id="dringlich" class="w-4 h-4 rounded border-slate-200 dark:border-zinc-800 text-brand-600 focus:ring-brand-500 accent-brand-600">
                             <label for="dringlich" class="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-zinc-400 cursor-pointer select-none">🚨 Hohe Priorität (Eilt)</label>
@@ -155,10 +162,71 @@
             <h2 class="font-black text-lg uppercase flex items-center gap-3"><i data-lucide="tablet" class="text-brand-500"></i> Scanner</h2>
             <div class="tablet-clock font-mono text-sm font-bold text-slate-400 italic">00:00:00</div>
         </div>
-        <div id="tablet-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-grow auto-rows-max"></div>
+        <!-- Die Grid-Spaltenanzahl wird jetzt dynamisch über CSS-Variablen gelöst -->
+        <div id="tablet-grid" class="grid gap-6 flex-grow auto-rows-max" style="grid-template-columns: repeat(var(--tablet-cols), minmax(0, 1fr));"></div>
     </main>
 
     <div id="toast-container" class="fixed bottom-8 right-8 z-[100] space-y-2"></div>
+
+    <!-- SCHWEBENDER LAYOUT-ANPASSUNGSPANEL (DRAWER) -->
+    <div id="layout-config-panel" class="fixed right-6 bottom-24 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-3xl p-6 shadow-2xl z-50 w-80 hidden transition-all">
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-zinc-900 pb-3 mb-4">
+            <h3 class="text-xs font-black uppercase tracking-wider text-brand-500 flex items-center gap-2">
+                <i data-lucide="sliders" class="w-4 h-4"></i> Display Kalibrierung
+            </h3>
+            <button onclick="toggleLayoutConfig()" class="text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        
+        <!-- Controls für TV Hallen-Monitor -->
+        <div id="layout-controls-tv" class="space-y-4 hidden">
+            <div>
+                <label class="text-[9px] font-black text-slate-400 block mb-1">ZEILEN-HÖHE (TV)</label>
+                <div class="flex items-center gap-3">
+                    <input type="range" id="scale-tv-height" min="50" max="250" value="85" class="w-full accent-brand-500">
+                    <span id="scale-tv-height-val" class="text-xs font-mono font-bold w-12 text-right">85px</span>
+                </div>
+            </div>
+            <div>
+                <label class="text-[9px] font-black text-slate-400 block mb-1">SCHRIFTGRÖSSE (TV)</label>
+                <div class="flex items-center gap-3">
+                    <input type="range" id="scale-tv-font" min="50" max="200" value="100" class="w-full accent-brand-500">
+                    <span id="scale-tv-font-val" class="text-xs font-mono font-bold w-12 text-right">100%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls für Tablet-Ansicht -->
+        <div id="layout-controls-tablet" class="space-y-4 hidden">
+            <div>
+                <label class="text-[9px] font-black text-slate-400 block mb-1">SPALTEN ANZAHL (TABLET)</label>
+                <div class="flex items-center gap-3">
+                    <input type="range" id="scale-tablet-cols" min="1" max="4" value="2" class="w-full accent-brand-500">
+                    <span id="scale-tablet-cols-val" class="text-xs font-mono font-bold w-12 text-right">2 Sp.</span>
+                </div>
+            </div>
+            <div>
+                <label class="text-[9px] font-black text-slate-400 block mb-1">KARTEN-HÖHE (TABLET)</label>
+                <div class="flex items-center gap-3">
+                    <input type="range" id="scale-tablet-height" min="100" max="300" value="160" class="w-full accent-brand-500">
+                    <span id="scale-tablet-height-val" class="text-xs font-mono font-bold w-12 text-right">160px</span>
+                </div>
+            </div>
+            <div>
+                <label class="text-[9px] font-black text-slate-400 block mb-1">SCHRIFTGRÖSSE (TABLET)</label>
+                <div class="flex items-center gap-3">
+                    <input type="range" id="scale-tablet-font" min="50" max="200" value="100" class="w-full accent-brand-500">
+                    <span id="scale-tablet-font-val" class="text-xs font-mono font-bold w-12 text-right">100%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schwebender Trigger Button für die Kalibrierung (nur sichtbar in TV/Tablet Ansichten) -->
+    <button id="btn-layout-toggle" onclick="toggleLayoutConfig()" class="fixed right-6 bottom-6 bg-brand-600 hover:bg-brand-700 text-white rounded-full p-4 shadow-2xl z-50 border-4 border-slate-50 dark:border-black hidden hover:scale-105 active:scale-95 transition-all">
+        <i data-lucide="sliders" class="w-6 h-6"></i>
+    </button>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -180,9 +248,17 @@
         let view = 'operator';
         let archiveDate = new Date().toISOString().split('T')[0];
         
-        // Letzte Sprachausgabe initial leicht verzögern, um unerwünschten Gong direkt beim Laden der Seite zu verhindern
         let voiceSettings = JSON.parse(localStorage.getItem('voice_v5')) || { active: true, name: '', interval: 2, reverb: 40 };
-        let lastVoiceTime = Date.now() - (voiceSettings.interval * 60000) + 10000; // 10 Sekunden Delay beim ersten Laden
+        let lastVoiceTime = Date.now() - (voiceSettings.interval * 60000) + 10000;
+
+        // Display Layout Einstellungen aus LocalStorage laden
+        let layoutSettings = JSON.parse(localStorage.getItem('layout_settings')) || {
+            tvHeight: 85,
+            tvFont: 100,
+            tabletCols: 2,
+            tabletHeight: 160,
+            tabletFont: 100
+        };
 
         // --- ACOUSTIC NEURAL ENGINE (NO MICROSOFT DEFAULT) ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -211,7 +287,6 @@
         bandpass.connect(reverbNode);
         reverbNode.connect(audioCtx.destination);
 
-        // Natürliche Sätze-Variablen
         const introPhrases = ["Hallo Team,", "Achtung,", "Kurzer Hinweis,", "Entschuldigung,", "Guten Tag,"];
         const midPhrases = ["die Auslagerung für", "wir warten auf den Auftrag von", "bitte prüft den Auftrag um", "erledigt bitte den Auftrag von"];
         const endPhrases = ["Vielen Dank.", "Bitte sofort ausführen.", "Eilt sehr.", "Dankeschön."];
@@ -220,12 +295,10 @@
             if(!voiceSettings.active && !isTest) return;
             if(synth.speaking) return;
 
-            // Aktivierung des Audio-Kontexts bei Browser-Einschränkungen (Autoplay-Policy)
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
 
-            // Professioneller Doppel-Gong (Durch Filter/Reverb geschleift für echten Halleneffekt)
             const o1 = audioCtx.createOscillator();
             const g = audioCtx.createGain();
             o1.frequency.setValueAtTime(554.37, audioCtx.currentTime); // C#
@@ -242,7 +315,7 @@
                 if(v) u.voice = v;
 
                 u.pitch = 0.95; 
-                u.rate = 0.82; // Langsamere, menschliche Geschwindigkeit
+                u.rate = 0.82; 
 
                 u.onend = () => { if(isTest) { const btn = document.getElementById('btn-voice-test'); if(btn) btn.classList.remove('voice-active-ui'); } };
                 synth.speak(u);
@@ -253,7 +326,6 @@
             const vRaw = synth.getVoices().filter(v => v.lang.startsWith('de'));
             const sel = document.getElementById('voice-gender');
             if(sel) {
-                // PRIORISIERE GOOGLE UND NEURAL
                 vRaw.sort((a,b) => {
                     const aPrio = a.name.includes('Google') || a.name.includes('Neural') || a.name.includes('Natural');
                     const bPrio = b.name.includes('Google') || b.name.includes('Neural') || b.name.includes('Natural');
@@ -261,7 +333,6 @@
                 });
                 sel.innerHTML = vRaw.map(v => `<option value="${v.name}">${(v.name.includes('Google') || v.name.includes('Neural')) ? '⭐ NEURAL: ' : '💻 '} ${v.name}</option>`).join('');
                 
-                // Zuverlässiger Fallback für gespeicherte Stimmen
                 if(voiceSettings.name && vRaw.some(x => x.name === voiceSettings.name)) {
                     sel.value = voiceSettings.name;
                 } else if(vRaw.length > 0) {
@@ -272,6 +343,50 @@
         }
         initVoices();
         if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = initVoices;
+
+        // --- LAYOUT ENGINE (RESPONSIVITÄT & DISPLAY-KALIBRIERUNG) ---
+        function applyLayoutSettings() {
+            const root = document.documentElement;
+            // CSS Custom Properties aktualisieren
+            root.style.setProperty('--tv-card-height', `${layoutSettings.tvHeight}px`);
+            root.style.setProperty('--tv-font-scale', layoutSettings.tvFont / 100);
+            root.style.setProperty('--tablet-cols', layoutSettings.tabletCols);
+            root.style.setProperty('--tablet-card-height', `${layoutSettings.tabletHeight}px`);
+            root.style.setProperty('--tablet-font-scale', layoutSettings.tabletFont / 100);
+
+            // Regler-Werte im Panel aktualisieren
+            document.getElementById('scale-tv-height').value = layoutSettings.tvHeight;
+            document.getElementById('scale-tv-height-val').textContent = `${layoutSettings.tvHeight}px`;
+            document.getElementById('scale-tv-font').value = layoutSettings.tvFont;
+            document.getElementById('scale-tv-font-val').textContent = `${layoutSettings.tvFont}%`;
+
+            document.getElementById('scale-tablet-cols').value = layoutSettings.tabletCols;
+            document.getElementById('scale-tablet-cols-val').textContent = `${layoutSettings.tabletCols} Sp.`;
+            document.getElementById('scale-tablet-height').value = layoutSettings.tabletHeight;
+            document.getElementById('scale-tablet-height-val').textContent = `${layoutSettings.tabletHeight}px`;
+            document.getElementById('scale-tablet-font').value = layoutSettings.tabletFont;
+            document.getElementById('scale-tablet-font-val').textContent = `${layoutSettings.tabletFont}%`;
+        }
+
+        function saveLayout() {
+            localStorage.setItem('layout_settings', JSON.stringify(layoutSettings));
+            applyLayoutSettings();
+            if (view === 'tablet' || view === 'tv') {
+                render();
+            }
+        }
+
+        window.toggleLayoutConfig = () => {
+            const panel = document.getElementById('layout-config-panel');
+            panel.classList.toggle('hidden');
+        };
+
+        // Regler Event Listener
+        document.getElementById('scale-tv-height').addEventListener('input', (e) => { layoutSettings.tvHeight = parseInt(e.target.value); saveLayout(); });
+        document.getElementById('scale-tv-font').addEventListener('input', (e) => { layoutSettings.tvFont = parseInt(e.target.value); saveLayout(); });
+        document.getElementById('scale-tablet-cols').addEventListener('input', (e) => { layoutSettings.tabletCols = parseInt(e.target.value); saveLayout(); });
+        document.getElementById('scale-tablet-height').addEventListener('input', (e) => { layoutSettings.tabletHeight = parseInt(e.target.value); saveLayout(); });
+        document.getElementById('scale-tablet-font').addEventListener('input', (e) => { layoutSettings.tabletFont = parseInt(e.target.value); saveLayout(); });
 
         // --- UI ACTIONS ---
         window.runAcousticTest = () => {
@@ -289,7 +404,21 @@
                 const active = b.id === `btn-mode-${mode}`;
                 b.className = `px-5 py-2 rounded-lg text-xs font-black uppercase transition-all ${active ? 'bg-brand-600 text-white shadow-xl' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-zinc-800'}`;
             });
+
+            // Layout Einstellungs-Trigger basierend auf der Ansicht ein-/ausblenden
+            const btnToggle = document.getElementById('btn-layout-toggle');
+            const panel = document.getElementById('layout-config-panel');
+            if (mode === 'tv' || mode === 'tablet') {
+                btnToggle.classList.remove('hidden');
+                document.getElementById('layout-controls-tv').classList.toggle('hidden', mode !== 'tv');
+                document.getElementById('layout-controls-tablet').classList.toggle('hidden', mode !== 'tablet');
+            } else {
+                btnToggle.classList.add('hidden');
+                panel.classList.add('hidden');
+            }
+
             render();
+            lucide.createIcons();
         };
 
         window.cycleStatus = async (id, cur) => {
@@ -315,7 +444,7 @@
             if(view === 'tv') renderTV(active, nowMin);
             if(view === 'tablet') renderTablet(active);
 
-            // DURCHSAGE LOGIK (VARIABLE SÄTZE)
+            // DURCHSAGE LOGIK
             const overdue = active.filter(o => o.status === 0 && ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin);
             if(overdue.length > 0 && (Date.now() - lastVoiceTime > voiceSettings.interval * 60000)) {
                 const i = introPhrases[Math.floor(Math.random()*introPhrases.length)];
@@ -362,34 +491,51 @@
                 const isLate = ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin;
                 const urgentBadge = o.dringlich ? `<span class="px-3 py-1 bg-red-600 text-white text-xs font-black rounded-lg animate-pulse mr-4">EILT</span>` : '';
                 return `
-                <div class="tv-card-row flex items-center border-4 rounded-[25px] bg-white dark:bg-zinc-950 pr-10 shadow-lg mb-4 ${o.status === 2 ? 'border-red-500 glow-error' : o.dringlich ? 'border-red-700/60' : 'border-slate-100 dark:border-zinc-900'}">
+                <!-- Proportionale Skalierung mittels Inline-Styles auf Basis von CSS Custom Properties -->
+                <div class="tv-card-row flex items-center border-4 rounded-[25px] bg-white dark:bg-zinc-950 pr-10 shadow-lg mb-4 ${o.status === 2 ? 'border-red-500 glow-error' : o.dringlich ? 'border-red-700/60' : 'border-slate-100 dark:border-zinc-900'}" style="height: var(--tv-card-height) !important;">
                     <div class="w-4 h-full ${o.status === 2 ? 'bg-red-500' : o.dringlich ? 'bg-red-600' : isLate ? 'bg-amber-500' : 'bg-slate-300'}"></div>
-                    <div class="flex-grow flex items-center justify-between pl-10 font-black">
-                        <div class="text-4xl font-mono flex items-center">${urgentBadge}${esc(o.artikelnummer)}</div>
-                        <div class="flex items-center gap-6 text-2xl uppercase"><span class="text-slate-400">${esc(o.lagerort)}</span><i data-lucide="radio" class="w-10 h-10 text-emerald-500"></i><span>${esc(o.zielort)}</span></div>
-                        <div class="text-right text-4xl font-mono ${isLate ? 'text-amber-500' : ''}">${o.uhrzeit}</div>
+                    <div class="flex-grow flex items-center justify-between pl-10 font-black" style="font-size: calc(1rem * var(--tv-font-scale));">
+                        <div class="text-[2.25em] font-mono flex items-center">${urgentBadge}${esc(o.artikelnummer)}</div>
+                        <div class="flex items-center gap-6 text-[1.5em] uppercase"><span class="text-slate-400">${esc(o.lagerort)}</span><i data-lucide="radio" class="w-[1.25em] h-[1.25em] text-emerald-500"></i><span>${esc(o.zielort)}</span></div>
+                        <div class="text-right text-[2.25em] font-mono ${isLate ? 'text-amber-500' : ''}">${o.uhrzeit}</div>
                     </div>
                 </div>`;
             }).join('');
         }
 
         function renderTablet(active) {
+            // Berechne die Barcode-Dimensionen dynamisch basierend auf der benutzerdefinierten Höhe
+            const bcHeight = Math.max(35, Math.min(100, Math.round(layoutSettings.tabletHeight * 0.35)));
+            const bcFontSize = Math.max(10, Math.min(20, Math.round(14 * (layoutSettings.tabletFont / 100))));
+
             document.getElementById('tablet-grid').innerHTML = active.map(o => {
-                const borderClass = o.status === 2 ? 'border-red-500' : o.dringlich ? 'border-red-600/70 bg-red-50/10 dark:bg-red-950/10' : 'border-slate-100 dark:border-zinc-900';
+                const borderClass = o.status === 2 ? 'border-red-500' : o.dringlich ? 'border-red-600/70 bg-red-50/10 dark:bg-red-950/20' : 'border-slate-100 dark:border-zinc-900';
                 return `
-                <div class="bg-white dark:bg-zinc-950 border-2 ${borderClass} p-5 rounded-[40px] flex items-center justify-between h-40 shadow-sm relative overflow-hidden">
+                <div class="bg-white dark:bg-zinc-950 border-2 ${borderClass} p-5 rounded-[40px] flex items-center justify-between shadow-sm relative overflow-hidden" style="height: var(--tablet-card-height); font-size: calc(1rem * var(--tablet-font-scale));">
                     ${o.dringlich ? `<div class="absolute top-0 right-0 bg-red-600 text-white text-[8px] font-black px-3 py-0.5 rounded-bl-xl uppercase tracking-widest animate-pulse">EILT</div>` : ''}
-                    <div class="bg-white p-3 rounded-2xl border shrink-0"><svg class="bc-svg" data-val="${o.artikelnummer}"></svg></div>
-                    <div class="text-center flex-grow px-2 font-black">
-                        <p class="text-xl uppercase tracking-tighter">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</p>
-                        <p class="text-xs text-slate-400 mt-2 uppercase font-bold tracking-widest">${o.uhrzeit} UHR</p>
+                    <div class="bg-white p-3 rounded-2xl border shrink-0 flex items-center justify-center h-[80%] max-h-[140px]">
+                        <svg class="bc-svg" data-val="${o.artikelnummer}"></svg>
                     </div>
-                    <button onclick="cycleStatus('${o.id}', ${o.status})" class="w-24 h-24 bg-emerald-500 text-white rounded-[35px] flex items-center justify-center shadow-lg active:scale-95 transition-all">
-                        <i data-lucide="check" class="w-12 h-12 stroke-[4]"></i>
+                    <div class="text-center flex-grow px-2 font-black">
+                        <p class="text-[1.25em] uppercase tracking-tighter leading-none">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</p>
+                        <p class="text-[0.75em] text-slate-400 mt-2 uppercase font-bold tracking-widest leading-none">${o.uhrzeit} UHR</p>
+                    </div>
+                    <button onclick="cycleStatus('${o.id}', ${o.status})" class="w-[6em] h-[6em] max-w-[90px] max-h-[90px] bg-emerald-500 text-white rounded-[35px] flex items-center justify-center shadow-lg active:scale-95 transition-all">
+                        <i data-lucide="check" class="w-[3em] h-[3em] stroke-[4]"></i>
                     </button>
                 </div>`;
             }).join('');
-            document.querySelectorAll('.bc-svg').forEach(el => JsBarcode(el, el.getAttribute('data-val'), { format: "CODE128", width: 2, height: 70, displayValue: true, fontSize: 16 }));
+            
+            // Barcodes mit den skalierten Dimensionen rendern
+            document.querySelectorAll('.bc-svg').forEach(el => {
+                JsBarcode(el, el.getAttribute('data-val'), { 
+                    format: "CODE128", 
+                    width: 2, 
+                    height: bcHeight, 
+                    displayValue: true, 
+                    fontSize: bcFontSize 
+                });
+            });
         }
 
         // --- CORE FUNCTIONS ---
@@ -451,6 +597,8 @@
             if(new Date().getSeconds() === 0) render();
         }, 1000);
 
+        // System initialisieren
+        applyLayoutSettings();
         initTime();
         setViewMode('operator');
     </script>
