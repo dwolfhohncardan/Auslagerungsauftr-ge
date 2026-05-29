@@ -175,7 +175,7 @@
             <h2 class="font-black text-lg uppercase flex items-center gap-3"><i data-lucide="tablet" class="text-brand-500"></i> Scanner</h2>
             <div class="tablet-clock font-mono text-sm font-bold text-slate-400 italic">00:00:00</div>
         </div>
-        <div id="tablet-grid" class="grid gap-6 flex-grow auto-rows-max" style="grid-template-columns: repeat(var(--tablet-cols), minmax(0, 1fr));"></div>
+        <div id="tablet-grid" class="grid gap-6 flex-grow auto-rows-max animate-fade-in" style="grid-template-columns: repeat(var(--tablet-cols), minmax(0, 1fr));"></div>
     </main>
 
     <div id="toast-container" class="fixed bottom-8 right-8 z-[100] space-y-2"></div>
@@ -221,14 +221,14 @@
             <div>
                 <label class="text-[9px] font-black text-slate-400 block mb-1">KARTEN-HÖHE (TABLET)</label>
                 <div class="flex items-center gap-3">
-                    <input type="range" id="scale-tablet-height" min="100" max="300" value="160" class="w-full accent-brand-500">
+                    <input type="range" id="scale-tablet-height" min="60" max="300" value="160" class="w-full accent-brand-500">
                     <span id="scale-tablet-height-val" class="text-xs font-mono font-bold w-12 text-right text-slate-900 dark:text-zinc-100">160px</span>
                 </div>
             </div>
             <div>
                 <label class="text-[9px] font-black text-slate-400 block mb-1">SCHRIFTGRÖSSE (TABLET)</label>
                 <div class="flex items-center gap-3">
-                    <input type="range" id="scale-tablet-font" min="50" max="200" value="100" class="w-full accent-brand-500">
+                    <input type="range" id="scale-tablet-font" min="40" max="200" value="100" class="w-full accent-brand-500">
                     <span id="scale-tablet-font-val" class="text-xs font-mono font-bold w-12 text-right text-slate-900 dark:text-zinc-100">100%</span>
                 </div>
             </div>
@@ -530,6 +530,8 @@
         function render() {
             const now = new Date();
             const nowMin = now.getHours() * 60 + now.getMinutes();
+            
+            // Standard-Filter (erledigte fliegen raus) für Operator & TV
             const active = orders.filter(o => o.status !== 1).sort((a,b) => {
                 if(a.status === 2 && b.status !== 2) return -1;
                 const minA = (a.uhrzeit.split(':')[0]*60) + (a.uhrzeit.split(':')[1]*1);
@@ -538,9 +540,20 @@
             });
             const archived = orders.filter(o => o.status === 1 && o.finishedAt?.toDate().toISOString().split('T')[0] === archiveDate);
 
+            // Tablet-spezifische Liste: Erledigte bleiben, rutschen aber nach unten (Kritisch -> Offen -> Erledigt)
+            const tabletOrders = [...orders].sort((a, b) => {
+                const scoreA = a.status === 2 ? 0 : a.status === 0 ? 1 : 2;
+                const scoreB = b.status === 2 ? 0 : b.status === 0 ? 1 : 2;
+                if (scoreA !== scoreB) return scoreA - scoreB;
+                
+                const minA = (a.uhrzeit.split(':')[0]*60) + (a.uhrzeit.split(':')[1]*1);
+                const minB = (b.uhrzeit.split(':')[0]*60) + (b.uhrzeit.split(':')[1]*1);
+                return minA - minB;
+            });
+
             if(view === 'operator') renderOperator(active, archived, nowMin);
             if(view === 'tv') renderTV(active, nowMin);
-            if(view === 'tablet') renderTablet(active);
+            if(view === 'tablet') renderTablet(tabletOrders);
 
             // PERIODISCHER WARNTON (UEBERFAELLIGE AUFTRAEGE IN SEKUNDEN)
             const overdue = active.filter(o => o.status === 0 && ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin);
@@ -561,7 +574,7 @@
                 return `
                 <tr class="hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors ${o.status === 2 ? 'bg-red-50/70 dark:bg-red-900/10' : ''}">
                     <td class="px-6 py-4 font-black text-sm flex items-center">${esc(o.artikelnummer)}${urgentBadge}</td>
-                    <td class="px-6 py-4 font-bold text-[10px] uppercase">${esc(o.lagerort) } ➔ ${esc(o.zielort)}</td>
+                    <td class="px-6 py-4 font-bold text-[10px] uppercase">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</td>
                     <td class="px-6 py-4 font-mono text-sm ${isLate ? 'text-amber-500 font-bold' : ''}">${o.uhrzeit}</td>
                     <td class="px-6 py-4 text-right">
                         <button onclick="cycleStatus('${o.id}', ${o.status})" class="p-2 bg-slate-100 dark:bg-zinc-800 rounded-lg hover:bg-emerald-500 hover:text-white transition-all"><i data-lucide="check" class="w-4 h-4"></i></button>
@@ -592,35 +605,62 @@
             }).join('');
         }
 
-        function renderTablet(active) {
+        function renderTablet(tabletList) {
             const bcHeight = Math.max(35, Math.min(100, Math.round(layoutSettings.tabletHeight * 0.35)));
             const bcFontSize = Math.max(10, Math.min(20, Math.round(14 * (layoutSettings.tabletFont / 100))));
 
-            document.getElementById('tablet-grid').innerHTML = active.map(o => {
-                const borderClass = o.status === 2 ? 'border-red-500 bg-red-50/70 dark:bg-zinc-950' : o.dringlich ? 'border-red-600/70 bg-red-50/20 dark:bg-red-950/20' : 'border-slate-200 dark:border-zinc-900';
+            document.getElementById('tablet-grid').innerHTML = tabletList.map(o => {
+                const isCompleted = o.status === 1;
+                const isCritical = o.status === 2;
+
+                let borderStyle = "";
+                if (isCompleted) {
+                    borderStyle = "border-slate-200 dark:border-zinc-800 bg-slate-100/40 dark:bg-zinc-900/10 opacity-35 select-none";
+                } else if (isCritical) {
+                    borderStyle = "border-red-500 bg-red-50/70 dark:bg-zinc-950 glow-error";
+                } else if (o.dringlich) {
+                    borderStyle = "border-red-600/70 bg-red-50/10 dark:bg-red-950/10";
+                } else {
+                    borderStyle = "border-slate-200 dark:border-zinc-900 bg-white dark:bg-zinc-950";
+                }
+
                 return `
-                <div class="bg-white dark:bg-zinc-950 border-2 ${borderClass} p-5 rounded-[40px] flex items-center justify-between shadow-sm relative overflow-hidden" style="height: var(--tablet-card-height); font-size: calc(1rem * var(--tablet-font-scale));">
-                    ${o.dringlich ? `<div class="absolute top-0 right-0 bg-red-600 text-white text-[8px] font-black px-3 py-0.5 rounded-bl-xl uppercase tracking-widest animate-pulse">EILT</div>` : ''}
-                    <div class="bg-white p-3 rounded-2xl border border-slate-200 dark:border-zinc-800 shrink-0 flex items-center justify-center h-[80%] max-h-[140px]">
-                        <svg class="bc-svg" data-val="${o.artikelnummer}"></svg>
+                <!-- Die gesamte Karte dient nun als komfortable Klickfläche zum Durchschalten -->
+                <div onclick="cycleStatus('${o.id}', ${o.status})" class="border-2 ${borderStyle} p-3 rounded-[32px] flex items-center justify-between shadow-sm relative overflow-hidden cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-all" style="height: var(--tablet-card-height); font-size: calc(1rem * var(--tablet-font-scale));">
+                    ${o.dringlich && !isCompleted ? `<div class="absolute top-0 right-0 bg-red-600 text-white text-[8px] font-black px-3 py-0.5 rounded-bl-xl uppercase tracking-widest animate-pulse">EILT</div>` : ''}
+                    ${isCompleted ? `<div class="absolute top-0 right-0 bg-slate-500 text-white text-[8px] font-black px-3 py-0.5 rounded-bl-xl uppercase tracking-widest">ERLEDIGT</div>` : ''}
+                    
+                    <!-- Barcode Box mit overflow-hidden schützt vor herausragenden eckigen SVG-Kanten -->
+                    <div class="bg-white p-2 rounded-2xl border border-slate-200 dark:border-zinc-300 shrink-0 flex items-center justify-center h-[90%] max-h-[140px] overflow-hidden aspect-[1.8/1]">
+                        <svg class="bc-svg w-full h-full" data-val="${o.artikelnummer}" style="max-height: 100%; display: block;"></svg>
                     </div>
-                    <div class="text-center flex-grow px-2 font-black">
-                        <p class="text-[1.25em] uppercase tracking-tighter leading-none">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</p>
-                        <p class="text-[0.75em] text-slate-400 mt-2 uppercase font-bold tracking-widest leading-none">${o.uhrzeit} UHR</p>
+                    
+                    <div class="text-center flex-grow px-3 font-black">
+                        <p class="text-[1.20em] uppercase tracking-tighter leading-none ${isCompleted ? 'line-through text-slate-400 dark:text-zinc-500' : ''}">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</p>
+                        <p class="text-[0.70em] text-slate-400 mt-2 uppercase font-bold tracking-widest leading-none">${o.uhrzeit} UHR</p>
                     </div>
-                    <button onclick="cycleStatus('${o.id}', ${o.status})" class="w-[6em] h-[6em] max-w-[90px] max-h-[90px] bg-emerald-500 text-white rounded-[35px] flex items-center justify-center shadow-lg active:scale-95 transition-all">
-                        <i data-lucide="check" class="w-[3em] h-[3em] stroke-[4]"></i>
-                    </button>
+
+                    <!-- Steriles, minimalistisches Statusicon ersetzt den alten grünen Button -->
+                    <div class="shrink-0 flex items-center justify-center pr-1">
+                        ${isCompleted ? 
+                            `<div class="w-8 h-8 rounded-full border-2 border-slate-400 dark:border-zinc-600 flex items-center justify-center text-slate-400 dark:text-zinc-600"><i data-lucide="check" class="w-4 h-4 stroke-[3]"></i></div>` : 
+                            isCritical ? 
+                            `<div class="w-8 h-8 rounded-full border-2 border-red-500 flex items-center justify-center text-red-500 animate-pulse"><i data-lucide="alert-triangle" class="w-4 h-4"></i></div>` :
+                            `<div class="w-8 h-8 rounded-full border-2 border-slate-300 dark:border-zinc-700 flex items-center justify-center text-slate-400 dark:text-zinc-500"><i data-lucide="arrow-right" class="w-4 h-4"></i></div>`
+                        }
+                    </div>
                 </div>`;
             }).join('');
             
+            // Barcodes mit transparentem Hintergrund generieren, um eckige Überlagerungen zu korrigieren
             document.querySelectorAll('.bc-svg').forEach(el => {
                 JsBarcode(el, el.getAttribute('data-val'), { 
                     format: "CODE128", 
                     width: 2, 
                     height: bcHeight, 
                     displayValue: true, 
-                    fontSize: bcFontSize 
+                    fontSize: bcFontSize,
+                    background: "transparent"
                 });
             });
         }
