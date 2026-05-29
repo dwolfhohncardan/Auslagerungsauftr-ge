@@ -162,13 +162,12 @@
             <h2 class="font-black text-lg uppercase flex items-center gap-3"><i data-lucide="tablet" class="text-brand-500"></i> Scanner</h2>
             <div class="tablet-clock font-mono text-sm font-bold text-slate-400 italic">00:00:00</div>
         </div>
-        <!-- Die Grid-Spaltenanzahl wird jetzt dynamisch über CSS-Variablen gelöst -->
         <div id="tablet-grid" class="grid gap-6 flex-grow auto-rows-max" style="grid-template-columns: repeat(var(--tablet-cols), minmax(0, 1fr));"></div>
     </main>
 
     <div id="toast-container" class="fixed bottom-8 right-8 z-[100] space-y-2"></div>
 
-    <!-- SCHWEBENDER LAYOUT-ANPASSUNGSPANEL (DRAWER) -->
+    <!-- SCHWEBENDES LAYOUT-ANPASSUNGSPANEL (DRAWER) -->
     <div id="layout-config-panel" class="fixed right-6 bottom-24 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-3xl p-6 shadow-2xl z-50 w-80 hidden transition-all">
         <div class="flex items-center justify-between border-b border-slate-100 dark:border-zinc-900 pb-3 mb-4">
             <h3 class="text-xs font-black uppercase tracking-wider text-brand-500 flex items-center gap-2">
@@ -344,17 +343,111 @@
         initVoices();
         if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = initVoices;
 
+        // --- SYNTHETISCHE AUDIO-BENACHRICHTIGUNGEN (WEB AUDIO API) ---
+        
+        let audioUnlocked = false;
+
+        // Komponente 1: Browser-Sicherheitsbarriere umgehen (Audio Unlock)
+        function unlockAudio() {
+            if (audioUnlocked) return;
+
+            // Web Audio API entsperren
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            try {
+                const buffer = audioCtx.createBuffer(1, 1, 22050);
+                const source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                source.connect(audioCtx.destination);
+                source.start(0);
+            } catch (e) {
+                console.warn("Web Audio Unlock fehlgeschlagen:", e);
+            }
+
+            // SpeechSynthesis entsperren
+            try {
+                const u = new SpeechSynthesisUtterance("");
+                u.volume = 0;
+                synth.speak(u);
+            } catch (e) {
+                console.warn("SpeechSynthesis Unlock fehlgeschlagen:", e);
+            }
+
+            audioUnlocked = true;
+
+            // Listener selbstständig entfernen
+            document.body.removeEventListener('click', unlockAudio);
+            document.body.removeEventListener('touchstart', unlockAudio);
+        }
+        document.body.addEventListener('click', unlockAudio);
+        document.body.addEventListener('touchstart', unlockAudio);
+
+        // Komponente 2: Erkennungs- und Filterlogik für neue Datensätze
+        let knownKeys = new Set();
+        let firstLoad = true;
+
+        // Komponente 4: Synthetische Klangerzeugung (Web Audio API)
+        // Normaler Sound: Dynamischer Sinus-Gleitton
+        window.playNewOrderSound = () => {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.5);
+
+            gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); // Sichere Lautstärke
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.5);
+        };
+
+        // Dringender Sound: Rhythmisches Warnsignal (4 schnelle Square-Beeps)
+        window.playUrgentSound = () => {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const beepDuration = 0.1; // 100ms Beep
+            const gap = 0.15;        // 150ms Pause zwischen Beeps
+            const now = audioCtx.currentTime;
+
+            for (let i = 0; i < 4; i++) {
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(800, now + i * (beepDuration + gap));
+
+                const beepStart = now + i * (beepDuration + gap);
+                const beepEnd = beepStart + beepDuration;
+
+                gainNode.gain.setValueAtTime(0.001, now);
+                gainNode.gain.setValueAtTime(0.12, beepStart); // Sichere Lautstärke
+                gainNode.gain.exponentialRampToValueAtTime(0.001, beepEnd);
+
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                osc.start(beepStart);
+                osc.stop(beepEnd);
+            }
+        };
+
         // --- LAYOUT ENGINE (RESPONSIVITÄT & DISPLAY-KALIBRIERUNG) ---
         function applyLayoutSettings() {
             const root = document.documentElement;
-            // CSS Custom Properties aktualisieren
             root.style.setProperty('--tv-card-height', `${layoutSettings.tvHeight}px`);
             root.style.setProperty('--tv-font-scale', layoutSettings.tvFont / 100);
             root.style.setProperty('--tablet-cols', layoutSettings.tabletCols);
             root.style.setProperty('--tablet-card-height', `${layoutSettings.tabletHeight}px`);
             root.style.setProperty('--tablet-font-scale', layoutSettings.tabletFont / 100);
 
-            // Regler-Werte im Panel aktualisieren
             document.getElementById('scale-tv-height').value = layoutSettings.tvHeight;
             document.getElementById('scale-tv-height-val').textContent = `${layoutSettings.tvHeight}px`;
             document.getElementById('scale-tv-font').value = layoutSettings.tvFont;
@@ -405,7 +498,6 @@
                 b.className = `px-5 py-2 rounded-lg text-xs font-black uppercase transition-all ${active ? 'bg-brand-600 text-white shadow-xl' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-zinc-800'}`;
             });
 
-            // Layout Einstellungs-Trigger basierend auf der Ansicht ein-/ausblenden
             const btnToggle = document.getElementById('btn-layout-toggle');
             const panel = document.getElementById('layout-config-panel');
             if (mode === 'tv' || mode === 'tablet') {
@@ -444,7 +536,7 @@
             if(view === 'tv') renderTV(active, nowMin);
             if(view === 'tablet') renderTablet(active);
 
-            // DURCHSAGE LOGIK
+            // PERIODISCHE DURCHSAGE (UEBERFAELLIGE AUFTRAEGE)
             const overdue = active.filter(o => o.status === 0 && ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin);
             if(overdue.length > 0 && (Date.now() - lastVoiceTime > voiceSettings.interval * 60000)) {
                 const i = introPhrases[Math.floor(Math.random()*introPhrases.length)];
@@ -491,7 +583,6 @@
                 const isLate = ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin;
                 const urgentBadge = o.dringlich ? `<span class="px-3 py-1 bg-red-600 text-white text-xs font-black rounded-lg animate-pulse mr-4">EILT</span>` : '';
                 return `
-                <!-- Proportionale Skalierung mittels Inline-Styles auf Basis von CSS Custom Properties -->
                 <div class="tv-card-row flex items-center border-4 rounded-[25px] bg-white dark:bg-zinc-950 pr-10 shadow-lg mb-4 ${o.status === 2 ? 'border-red-500 glow-error' : o.dringlich ? 'border-red-700/60' : 'border-slate-100 dark:border-zinc-900'}" style="height: var(--tv-card-height) !important;">
                     <div class="w-4 h-full ${o.status === 2 ? 'bg-red-500' : o.dringlich ? 'bg-red-600' : isLate ? 'bg-amber-500' : 'bg-slate-300'}"></div>
                     <div class="flex-grow flex items-center justify-between pl-10 font-black" style="font-size: calc(1rem * var(--tv-font-scale));">
@@ -504,7 +595,6 @@
         }
 
         function renderTablet(active) {
-            // Berechne die Barcode-Dimensionen dynamisch basierend auf der benutzerdefinierten Höhe
             const bcHeight = Math.max(35, Math.min(100, Math.round(layoutSettings.tabletHeight * 0.35)));
             const bcFontSize = Math.max(10, Math.min(20, Math.round(14 * (layoutSettings.tabletFont / 100))));
 
@@ -526,7 +616,6 @@
                 </div>`;
             }).join('');
             
-            // Barcodes mit den skalierten Dimensionen rendern
             document.querySelectorAll('.bc-svg').forEach(el => {
                 JsBarcode(el, el.getAttribute('data-val'), { 
                     format: "CODE128", 
@@ -545,8 +634,47 @@
             document.getElementById('archive-date-filter').value = archiveDate;
         }
 
+        // Firestore Event-Schleife mit integrierter Echtzeit-Datenprüflogik (Komponente 2 & 3)
         onSnapshot(query(ordersCol, orderBy("createdAt", "desc")), (snap) => {
-            orders = []; snap.forEach(d => orders.push({ id: d.id, ...d.data() }));
+            const tempOrders = [];
+            const incomingIds = [];
+            let hasNewOrders = false;
+            let hasNewUrgent = false;
+
+            snap.forEach(d => {
+                const data = d.data();
+                tempOrders.push({ id: d.id, ...data });
+                incomingIds.push(d.id);
+            });
+
+            // Wenn es sich nicht um den ersten Ladevorgang handelt, prüfen wir auf Differenzen
+            if (!firstLoad) {
+                incomingIds.forEach(id => {
+                    if (!knownKeys.has(id)) {
+                        hasNewOrders = true;
+                        // Prüfen, ob der neue Datensatz eilt/dringlich ist
+                        const matched = tempOrders.find(o => o.id === id);
+                        if (matched && matched.dringlich) {
+                            hasNewUrgent = true;
+                        }
+                    }
+                });
+
+                // Priorisierung der Signaltöne
+                if (hasNewUrgent) {
+                    playUrgentSound();
+                } else if (hasNewOrders) {
+                    playNewOrderSound();
+                }
+            }
+
+            // Set mit bekannten IDs befüllen / aktualisieren
+            incomingIds.forEach(id => knownKeys.add(id));
+            
+            // Schutz vor Sound-Flut aufheben
+            firstLoad = false;
+
+            orders = tempOrders;
             render();
         });
 
@@ -597,7 +725,6 @@
             if(new Date().getSeconds() === 0) render();
         }, 1000);
 
-        // System initialisieren
         applyLayoutSettings();
         initTime();
         setViewMode('operator');
