@@ -17,6 +17,15 @@
             }
         }
     </script>
+    <script>
+        // FOUC-Blocker: Theme sofort beim Parsen initialisieren, um Flackern zu verhindern
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        if (savedTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
@@ -30,16 +39,16 @@
         }
         body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
         .tv-card-row { height: var(--tv-card-height, 85px) !important; }
-        .glow-error { box-shadow: 0 0 30px rgba(239, 68, 68, 0.6); animation: pulse-red 1.5s infinite; }
+        .glow-error { box-shadow: 0 0 30px rgba(239, 68, 68, 0.35); animation: pulse-red 1.5s infinite; }
         @keyframes pulse-red { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.98); opacity: 0.8; } }
         .voice-active-ui { animation: pulse-emerald 1s infinite; background: #10b981 !important; color: white !important; }
         @keyframes pulse-emerald { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 dark:bg-black dark:text-zinc-100 min-h-screen flex flex-col">
+<body class="bg-slate-50 text-slate-900 dark:bg-black dark:text-zinc-100 min-h-screen flex flex-col transition-colors duration-200">
 
     <!-- Header -->
-    <header class="border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-black sticky top-0 z-50">
+    <header class="border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-black sticky top-0 z-50 transition-colors duration-200">
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <div class="bg-brand-600 p-2 rounded-lg text-white shadow-lg">
@@ -51,11 +60,19 @@
                 </div>
             </div>
 
-            <nav class="flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-xl border border-slate-200 dark:border-zinc-800">
-                <button id="btn-mode-operator" onclick="setViewMode('operator')" class="px-5 py-2 rounded-lg text-xs font-black uppercase transition-all">Bediener</button>
-                <button id="btn-mode-tv" onclick="setViewMode('tv')" class="px-5 py-2 rounded-lg text-xs font-black uppercase transition-all">TV-Halle</button>
-                <button id="btn-mode-tablet" onclick="setViewMode('tablet')" class="px-5 py-2 rounded-lg text-xs font-black uppercase transition-all">Tablet</button>
-            </nav>
+            <div class="flex items-center space-x-4">
+                <nav class="flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-xl border border-slate-200 dark:border-zinc-800 transition-colors duration-200">
+                    <button id="btn-mode-operator" onclick="setViewMode('operator')" class="px-5 py-2 rounded-lg text-xs font-black uppercase transition-all">Bediener</button>
+                    <button id="btn-mode-tv" onclick="setViewMode('tv')" class="px-5 py-2 rounded-lg text-xs font-black uppercase transition-all">TV-Halle</button>
+                    <button id="btn-mode-tablet" onclick="setViewMode('tablet')" class="px-5 py-2 rounded-lg text-xs font-black uppercase transition-all">Tablet</button>
+                </nav>
+                
+                <!-- Theme Toggle -->
+                <button id="btn-theme-toggle" onclick="toggleTheme()" class="p-2.5 bg-slate-100 dark:bg-zinc-900 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 border border-slate-200 dark:border-zinc-800 rounded-xl transition-all" title="Theme wechseln">
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -64,17 +81,17 @@
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
             <div class="lg:col-span-1 space-y-6">
                 <!-- Erfassung -->
-                <div class="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm">
+                <div class="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm transition-colors duration-200">
                     <h2 class="text-[10px] font-black uppercase tracking-widest mb-6 text-brand-500">Auftragserfassung</h2>
                     <form id="auftrag-form" class="space-y-4">
-                        <input type="text" id="artikelnummer" required placeholder="Artikelnummer" class="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-brand-500">
+                        <input type="text" id="artikelnummer" required placeholder="Artikelnummer" class="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-brand-500 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500">
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="text" id="lagerort" required placeholder="VON" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold uppercase">
-                            <input type="text" id="zielort" required placeholder="NACH" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold uppercase">
+                            <input type="text" id="lagerort" required placeholder="VON" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold uppercase text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500">
+                            <input type="text" id="zielort" required placeholder="NACH" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold uppercase text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500">
                         </div>
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="time" id="uhrzeit" required class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold">
-                            <select id="schicht" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold">
+                            <input type="time" id="uhrzeit" required class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold text-slate-900 dark:text-zinc-100">
+                            <select id="schicht" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold text-slate-900 dark:text-zinc-100">
                                 <option>Frühschicht</option><option>Spätschicht</option><option>Nachtschicht</option>
                             </select>
                         </div>
@@ -87,24 +104,20 @@
                     </form>
                 </div>
 
-                <!-- Voice Config Pro -->
-                <div class="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm border-l-4 border-l-emerald-500">
+                <!-- Warnton Setup -->
+                <div class="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm border-l-4 border-l-emerald-500 transition-colors duration-200">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-[10px] font-black uppercase tracking-widest text-emerald-500">Acoustic Setup</h2>
+                        <h2 class="text-[10px] font-black uppercase tracking-widest text-emerald-500">Warnton Setup</h2>
                         <input type="checkbox" id="voice-active" class="w-4 h-4 accent-emerald-500" checked>
                     </div>
                     <div class="space-y-4">
-                        <div>
-                            <label class="text-[9px] font-black text-slate-400 block mb-1">KI-STIMME (GOOGLE/NEURAL)</label>
-                            <select id="voice-gender" class="w-full p-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-[10px] font-bold outline-none"></select>
-                        </div>
                         <div>
                             <label class="text-[9px] font-black text-slate-400 block mb-1">HALL-INTENSITÄT (REVERB)</label>
                             <input type="range" id="voice-reverb" min="0" max="100" value="40" class="w-full accent-emerald-500">
                         </div>
                         <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-zinc-900">
-                            <label class="text-[10px] font-bold text-slate-400">INTERVAL (MIN)</label>
-                            <input type="number" id="voice-interval" value="2" min="1" class="w-12 p-1 bg-slate-100 dark:bg-zinc-900 rounded text-xs font-bold text-center">
+                            <label class="text-[10px] font-bold text-slate-400">INTERVAL (SEK)</label>
+                            <input type="number" id="voice-interval" value="30" min="1" class="w-12 p-1 bg-slate-100 dark:bg-zinc-900 rounded text-xs font-bold text-center text-slate-900 dark:text-zinc-100 border border-slate-200 dark:border-zinc-800">
                         </div>
                     </div>
                 </div>
@@ -112,8 +125,8 @@
 
             <!-- Warteschlange -->
             <div class="lg:col-span-3 space-y-6">
-                <div class="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden">
-                    <div class="px-6 py-4 border-b border-slate-200 dark:border-zinc-800 flex justify-between items-center bg-slate-50/50 dark:bg-zinc-900/50">
+                <div class="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden transition-colors duration-200">
+                    <div class="px-6 py-4 border-b border-slate-200 dark:border-zinc-800 flex justify-between items-center bg-slate-50/50 dark:bg-zinc-900/50 transition-colors duration-200">
                         <h2 class="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-slate-500"><i data-lucide="layout-list" class="w-3 h-3"></i> Warteschlange</h2>
                         <div id="live-clock-operator" class="text-xs font-mono font-bold text-brand-500 uppercase tracking-tighter">00:00:00</div>
                     </div>
@@ -122,10 +135,10 @@
                     </table>
                 </div>
 
-                <div class="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden border-dashed p-4">
+                <div class="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden border-dashed p-4 transition-colors duration-200">
                     <div class="flex justify-between items-center">
                         <h2 class="text-[10px] font-black uppercase tracking-widest text-slate-400 italic">Archiv</h2>
-                        <input type="date" id="archive-date-filter" class="text-[10px] bg-slate-100 dark:bg-zinc-900 rounded p-1 font-bold outline-none border-none">
+                        <input type="date" id="archive-date-filter" class="text-[10px] bg-slate-100 dark:bg-zinc-900 rounded p-1 font-bold outline-none border-none text-slate-900 dark:text-zinc-100">
                     </div>
                     <table class="w-full text-left text-[10px] text-slate-500 mt-2">
                         <tbody id="table-archive" class="divide-y divide-slate-50 dark:divide-zinc-900"></tbody>
@@ -137,7 +150,7 @@
 
     <!-- TV MONITOR -->
     <main id="view-tv" class="hidden flex-grow p-6 flex flex-col space-y-4">
-        <div class="bg-white dark:bg-zinc-950 border-4 border-slate-100 dark:border-zinc-900 p-8 rounded-[40px] flex items-center justify-between shadow-2xl">
+        <div class="bg-white dark:bg-zinc-950 border-4 border-slate-100 dark:border-zinc-900 p-8 rounded-[40px] flex items-center justify-between shadow-2xl transition-colors duration-200">
             <div class="flex items-center gap-12">
                 <span class="text-4xl font-black uppercase tracking-tighter text-brand-600">Hallen-Monitor</span>
                 <div class="flex gap-12 border-l-4 pl-12 border-slate-100 dark:border-zinc-900 font-black">
@@ -148,7 +161,7 @@
             
             <button id="btn-voice-test" onclick="runAcousticTest()" class="flex items-center gap-4 px-10 py-5 border-4 border-emerald-500/20 rounded-[30px] hover:border-emerald-500 transition-all group">
                 <i data-lucide="radio" class="w-8 h-8 group-hover:animate-pulse text-emerald-500"></i>
-                <span id="voice-test-text" class="text-lg font-black uppercase tracking-widest text-emerald-500">Akustik-Check</span>
+                <span id="voice-test-text" class="text-lg font-black uppercase tracking-widest text-emerald-500">Warnton-Check</span>
             </button>
 
             <div id="tv-clock" class="text-6xl font-mono font-black tracking-tighter">00:00:00</div>
@@ -158,7 +171,7 @@
 
     <!-- TABLET -->
     <main id="view-tablet" class="hidden flex-grow p-4 flex flex-col space-y-4">
-        <div class="bg-white dark:bg-zinc-950 p-5 rounded-3xl border border-slate-200 dark:border-zinc-800 flex justify-between items-center shadow-md">
+        <div class="bg-white dark:bg-zinc-950 p-5 rounded-3xl border border-slate-200 dark:border-zinc-800 flex justify-between items-center shadow-md transition-colors duration-200">
             <h2 class="font-black text-lg uppercase flex items-center gap-3"><i data-lucide="tablet" class="text-brand-500"></i> Scanner</h2>
             <div class="tablet-clock font-mono text-sm font-bold text-slate-400 italic">00:00:00</div>
         </div>
@@ -184,14 +197,14 @@
                 <label class="text-[9px] font-black text-slate-400 block mb-1">ZEILEN-HÖHE (TV)</label>
                 <div class="flex items-center gap-3">
                     <input type="range" id="scale-tv-height" min="50" max="250" value="85" class="w-full accent-brand-500">
-                    <span id="scale-tv-height-val" class="text-xs font-mono font-bold w-12 text-right">85px</span>
+                    <span id="scale-tv-height-val" class="text-xs font-mono font-bold w-12 text-right text-slate-900 dark:text-zinc-100">85px</span>
                 </div>
             </div>
             <div>
                 <label class="text-[9px] font-black text-slate-400 block mb-1">SCHRIFTGRÖSSE (TV)</label>
                 <div class="flex items-center gap-3">
                     <input type="range" id="scale-tv-font" min="50" max="200" value="100" class="w-full accent-brand-500">
-                    <span id="scale-tv-font-val" class="text-xs font-mono font-bold w-12 text-right">100%</span>
+                    <span id="scale-tv-font-val" class="text-xs font-mono font-bold w-12 text-right text-slate-900 dark:text-zinc-100">100%</span>
                 </div>
             </div>
         </div>
@@ -202,27 +215,27 @@
                 <label class="text-[9px] font-black text-slate-400 block mb-1">SPALTEN ANZAHL (TABLET)</label>
                 <div class="flex items-center gap-3">
                     <input type="range" id="scale-tablet-cols" min="1" max="4" value="2" class="w-full accent-brand-500">
-                    <span id="scale-tablet-cols-val" class="text-xs font-mono font-bold w-12 text-right">2 Sp.</span>
+                    <span id="scale-tablet-cols-val" class="text-xs font-mono font-bold w-12 text-right text-slate-900 dark:text-zinc-100">2 Sp.</span>
                 </div>
             </div>
             <div>
                 <label class="text-[9px] font-black text-slate-400 block mb-1">KARTEN-HÖHE (TABLET)</label>
                 <div class="flex items-center gap-3">
                     <input type="range" id="scale-tablet-height" min="100" max="300" value="160" class="w-full accent-brand-500">
-                    <span id="scale-tablet-height-val" class="text-xs font-mono font-bold w-12 text-right">160px</span>
+                    <span id="scale-tablet-height-val" class="text-xs font-mono font-bold w-12 text-right text-slate-900 dark:text-zinc-100">160px</span>
                 </div>
             </div>
             <div>
                 <label class="text-[9px] font-black text-slate-400 block mb-1">SCHRIFTGRÖSSE (TABLET)</label>
                 <div class="flex items-center gap-3">
                     <input type="range" id="scale-tablet-font" min="50" max="200" value="100" class="w-full accent-brand-500">
-                    <span id="scale-tablet-font-val" class="text-xs font-mono font-bold w-12 text-right">100%</span>
+                    <span id="scale-tablet-font-val" class="text-xs font-mono font-bold w-12 text-right text-slate-900 dark:text-zinc-100">100%</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Schwebender Trigger Button für die Kalibrierung (nur sichtbar in TV/Tablet Ansichten) -->
+    <!-- Schwebender Trigger Button für die Kalibrierung -->
     <button id="btn-layout-toggle" onclick="toggleLayoutConfig()" class="fixed right-6 bottom-6 bg-brand-600 hover:bg-brand-700 text-white rounded-full p-4 shadow-2xl z-50 border-4 border-slate-50 dark:border-black hidden hover:scale-105 active:scale-95 transition-all">
         <i data-lucide="sliders" class="w-6 h-6"></i>
     </button>
@@ -247,8 +260,14 @@
         let view = 'operator';
         let archiveDate = new Date().toISOString().split('T')[0];
         
-        let voiceSettings = JSON.parse(localStorage.getItem('voice_v5')) || { active: true, name: '', interval: 2, reverb: 40 };
-        let lastVoiceTime = Date.now() - (voiceSettings.interval * 60000) + 10000;
+        let voiceSettings = JSON.parse(localStorage.getItem('voice_v5')) || { active: true, interval: 30, reverb: 40 };
+        
+        // Migration von Minutenwerten auf Sekunden
+        if (voiceSettings.interval < 5) {
+            voiceSettings.interval = 30;
+        }
+        
+        let lastVoiceTime = Date.now() - (voiceSettings.interval * 1000) + 10000;
 
         // Display Layout Einstellungen aus LocalStorage laden
         let layoutSettings = JSON.parse(localStorage.getItem('layout_settings')) || {
@@ -259,9 +278,21 @@
             tabletFont: 100
         };
 
-        // --- ACOUSTIC NEURAL ENGINE (NO MICROSOFT DEFAULT) ---
+        // --- THEME ENGINE (HELL / DUNKEL-MODUS) ---
+        window.toggleTheme = () => {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+            lucide.createIcons();
+        };
+
+        // --- ACOUSTIC WARNTON ENGINE (STRENG KEINE SIRENE) ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const synth = window.speechSynthesis;
         
         // Filter Chain
         const bandpass = audioCtx.createBiquadFilter();
@@ -286,62 +317,49 @@
         bandpass.connect(reverbNode);
         reverbNode.connect(audioCtx.destination);
 
-        const introPhrases = ["Hallo Team,", "Achtung,", "Kurzer Hinweis,", "Entschuldigung,", "Guten Tag,"];
-        const midPhrases = ["die Auslagerung für", "wir warten auf den Auftrag von", "bitte prüft den Auftrag um", "erledigt bitte den Auftrag von"];
-        const endPhrases = ["Vielen Dank.", "Bitte sofort ausführen.", "Eilt sehr.", "Dankeschön."];
-
-        function speakNatural(text, isTest = false) {
+        // Industrieller, nicht-aggressiver Doppel-Gong (E5 + A5 Harmonien, keine Sirene)
+        function playWarningChime(isTest = false) {
             if(!voiceSettings.active && !isTest) return;
-            if(synth.speaking) return;
 
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
 
-            const o1 = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            o1.frequency.setValueAtTime(554.37, audioCtx.currentTime); // C#
-            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
-            
-            o1.connect(g); 
-            g.connect(bandpass); 
-            o1.start(); 
-            o1.stop(audioCtx.currentTime + 0.8);
+            const now = audioCtx.currentTime;
 
-            setTimeout(() => {
-                const u = new SpeechSynthesisUtterance(text);
-                const v = synth.getVoices().find(x => x.name === voiceSettings.name);
-                if(v) u.voice = v;
+            // Erster Ton: E5 (659.25 Hz)
+            const osc1 = audioCtx.createOscillator();
+            const gain1 = audioCtx.createGain();
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(659.25, now);
+            gain1.gain.setValueAtTime(0.001, now);
+            gain1.gain.exponentialRampToValueAtTime(0.12, now + 0.05);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+            osc1.connect(gain1);
+            gain1.connect(bandpass);
+            osc1.start(now);
+            osc1.stop(now + 0.6);
 
-                u.pitch = 0.95; 
-                u.rate = 0.82; 
+            // Zweiter Ton: A5 (880.00 Hz) - dezent zeitversetzt für weiche Gongwirkung
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(880.00, now + 0.2);
+            gain2.gain.setValueAtTime(0.001, now);
+            gain2.gain.exponentialRampToValueAtTime(0.12, now + 0.25);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+            osc2.connect(gain2);
+            gain2.connect(bandpass);
+            osc2.start(now + 0.2);
+            osc2.stop(now + 0.8);
 
-                u.onend = () => { if(isTest) { const btn = document.getElementById('btn-voice-test'); if(btn) btn.classList.remove('voice-active-ui'); } };
-                synth.speak(u);
-            }, 900);
-        }
-
-        function initVoices() {
-            const vRaw = synth.getVoices().filter(v => v.lang.startsWith('de'));
-            const sel = document.getElementById('voice-gender');
-            if(sel) {
-                vRaw.sort((a,b) => {
-                    const aPrio = a.name.includes('Google') || a.name.includes('Neural') || a.name.includes('Natural');
-                    const bPrio = b.name.includes('Google') || b.name.includes('Neural') || b.name.includes('Natural');
-                    return bPrio - aPrio;
-                });
-                sel.innerHTML = vRaw.map(v => `<option value="${v.name}">${(v.name.includes('Google') || v.name.includes('Neural')) ? '⭐ NEURAL: ' : '💻 '} ${v.name}</option>`).join('');
-                
-                if(voiceSettings.name && vRaw.some(x => x.name === voiceSettings.name)) {
-                    sel.value = voiceSettings.name;
-                } else if(vRaw.length > 0) {
-                    voiceSettings.name = vRaw[0].name;
-                    sel.value = voiceSettings.name;
-                }
+            if (isTest) {
+                setTimeout(() => {
+                    const btn = document.getElementById('btn-voice-test');
+                    if(btn) btn.classList.remove('voice-active-ui');
+                }, 800);
             }
         }
-        initVoices();
-        if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = initVoices;
 
         // --- SYNTHETISCHE AUDIO-BENACHRICHTIGUNGEN (WEB AUDIO API) ---
         
@@ -351,7 +369,6 @@
         function unlockAudio() {
             if (audioUnlocked) return;
 
-            // Web Audio API entsperren
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
@@ -365,18 +382,8 @@
                 console.warn("Web Audio Unlock fehlgeschlagen:", e);
             }
 
-            // SpeechSynthesis entsperren
-            try {
-                const u = new SpeechSynthesisUtterance("");
-                u.volume = 0;
-                synth.speak(u);
-            } catch (e) {
-                console.warn("SpeechSynthesis Unlock fehlgeschlagen:", e);
-            }
-
             audioUnlocked = true;
 
-            // Listener selbstständig entfernen
             document.body.removeEventListener('click', unlockAudio);
             document.body.removeEventListener('touchstart', unlockAudio);
         }
@@ -399,7 +406,7 @@
             osc.frequency.setValueAtTime(880, audioCtx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.5);
 
-            gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); // Sichere Lautstärke
+            gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); 
             gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
 
             osc.connect(gainNode);
@@ -413,8 +420,8 @@
         window.playUrgentSound = () => {
             if (audioCtx.state === 'suspended') audioCtx.resume();
 
-            const beepDuration = 0.1; // 100ms Beep
-            const gap = 0.15;        // 150ms Pause zwischen Beeps
+            const beepDuration = 0.1; 
+            const gap = 0.15;        
             const now = audioCtx.currentTime;
 
             for (let i = 0; i < 4; i++) {
@@ -428,7 +435,7 @@
                 const beepEnd = beepStart + beepDuration;
 
                 gainNode.gain.setValueAtTime(0.001, now);
-                gainNode.gain.setValueAtTime(0.12, beepStart); // Sichere Lautstärke
+                gainNode.gain.setValueAtTime(0.12, beepStart); 
                 gainNode.gain.exponentialRampToValueAtTime(0.001, beepEnd);
 
                 osc.connect(gainNode);
@@ -485,8 +492,7 @@
         window.runAcousticTest = () => {
             const btn = document.getElementById('btn-voice-test');
             if(btn) btn.classList.add('voice-active-ui');
-            const msg = "Achtung. Dies ist ein Test des neuronalen Durchsagesystems. Die akustische Übertragung in der Halle ist nun aktiv.";
-            speakNatural(msg, true);
+            playWarningChime(true);
         };
 
         window.setViewMode = (mode) => {
@@ -536,18 +542,10 @@
             if(view === 'tv') renderTV(active, nowMin);
             if(view === 'tablet') renderTablet(active);
 
-            // PERIODISCHE DURCHSAGE (UEBERFAELLIGE AUFTRAEGE)
+            // PERIODISCHER WARNTON (UEBERFAELLIGE AUFTRAEGE IN SEKUNDEN)
             const overdue = active.filter(o => o.status === 0 && ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin);
-            if(overdue.length > 0 && (Date.now() - lastVoiceTime > voiceSettings.interval * 60000)) {
-                const i = introPhrases[Math.floor(Math.random()*introPhrases.length)];
-                const m = midPhrases[Math.floor(Math.random()*midPhrases.length)];
-                const e = endPhrases[Math.floor(Math.random()*endPhrases.length)];
-                
-                let msg = overdue.length === 1 
-                    ? `${i} ${m} ${overdue[0].uhrzeit} Uhr ist überfällig. ${e}` 
-                    : `${i} es liegen mehrere überfällige Auslagerungen vor. Bitte Warteschlange prüfen. ${e}`;
-                
-                speakNatural(msg);
+            if(overdue.length > 0 && (Date.now() - lastVoiceTime > voiceSettings.interval * 1000)) {
+                playWarningChime();
                 lastVoiceTime = Date.now();
             }
 
@@ -561,9 +559,9 @@
                 const isLate = ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin;
                 const urgentBadge = o.dringlich ? `<span class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-black bg-red-600 text-white animate-pulse">EILT</span>` : '';
                 return `
-                <tr class="hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors ${o.status === 2 ? 'bg-red-50 dark:bg-red-900/10' : ''}">
+                <tr class="hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors ${o.status === 2 ? 'bg-red-50/70 dark:bg-red-900/10' : ''}">
                     <td class="px-6 py-4 font-black text-sm flex items-center">${esc(o.artikelnummer)}${urgentBadge}</td>
-                    <td class="px-6 py-4 font-bold text-[10px] uppercase">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</td>
+                    <td class="px-6 py-4 font-bold text-[10px] uppercase">${esc(o.lagerort) } ➔ ${esc(o.zielort)}</td>
                     <td class="px-6 py-4 font-mono text-sm ${isLate ? 'text-amber-500 font-bold' : ''}">${o.uhrzeit}</td>
                     <td class="px-6 py-4 text-right">
                         <button onclick="cycleStatus('${o.id}', ${o.status})" class="p-2 bg-slate-100 dark:bg-zinc-800 rounded-lg hover:bg-emerald-500 hover:text-white transition-all"><i data-lucide="check" class="w-4 h-4"></i></button>
@@ -583,7 +581,7 @@
                 const isLate = ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin;
                 const urgentBadge = o.dringlich ? `<span class="px-3 py-1 bg-red-600 text-white text-xs font-black rounded-lg animate-pulse mr-4">EILT</span>` : '';
                 return `
-                <div class="tv-card-row flex items-center border-4 rounded-[25px] bg-white dark:bg-zinc-950 pr-10 shadow-lg mb-4 ${o.status === 2 ? 'border-red-500 glow-error' : o.dringlich ? 'border-red-700/60' : 'border-slate-100 dark:border-zinc-900'}" style="height: var(--tv-card-height) !important;">
+                <div class="tv-card-row flex items-center border-4 rounded-[25px] bg-white dark:bg-zinc-950 pr-10 shadow-lg mb-4 ${o.status === 2 ? 'border-red-500 glow-error bg-red-50/70 dark:bg-zinc-950' : o.dringlich ? 'border-red-700/60' : 'border-slate-200 dark:border-zinc-900'}" style="height: var(--tv-card-height) !important;">
                     <div class="w-4 h-full ${o.status === 2 ? 'bg-red-500' : o.dringlich ? 'bg-red-600' : isLate ? 'bg-amber-500' : 'bg-slate-300'}"></div>
                     <div class="flex-grow flex items-center justify-between pl-10 font-black" style="font-size: calc(1rem * var(--tv-font-scale));">
                         <div class="text-[2.25em] font-mono flex items-center">${urgentBadge}${esc(o.artikelnummer)}</div>
@@ -599,11 +597,11 @@
             const bcFontSize = Math.max(10, Math.min(20, Math.round(14 * (layoutSettings.tabletFont / 100))));
 
             document.getElementById('tablet-grid').innerHTML = active.map(o => {
-                const borderClass = o.status === 2 ? 'border-red-500' : o.dringlich ? 'border-red-600/70 bg-red-50/10 dark:bg-red-950/20' : 'border-slate-100 dark:border-zinc-900';
+                const borderClass = o.status === 2 ? 'border-red-500 bg-red-50/70 dark:bg-zinc-950' : o.dringlich ? 'border-red-600/70 bg-red-50/20 dark:bg-red-950/20' : 'border-slate-200 dark:border-zinc-900';
                 return `
                 <div class="bg-white dark:bg-zinc-950 border-2 ${borderClass} p-5 rounded-[40px] flex items-center justify-between shadow-sm relative overflow-hidden" style="height: var(--tablet-card-height); font-size: calc(1rem * var(--tablet-font-scale));">
                     ${o.dringlich ? `<div class="absolute top-0 right-0 bg-red-600 text-white text-[8px] font-black px-3 py-0.5 rounded-bl-xl uppercase tracking-widest animate-pulse">EILT</div>` : ''}
-                    <div class="bg-white p-3 rounded-2xl border shrink-0 flex items-center justify-center h-[80%] max-h-[140px]">
+                    <div class="bg-white p-3 rounded-2xl border border-slate-200 dark:border-zinc-800 shrink-0 flex items-center justify-center h-[80%] max-h-[140px]">
                         <svg class="bc-svg" data-val="${o.artikelnummer}"></svg>
                     </div>
                     <div class="text-center flex-grow px-2 font-black">
@@ -634,7 +632,7 @@
             document.getElementById('archive-date-filter').value = archiveDate;
         }
 
-        // Firestore Event-Schleife mit integrierter Echtzeit-Datenprüflogik (Komponente 2 & 3)
+        // Firestore Event-Schleife mit integrierter Echtzeit-Datenprüflogik
         onSnapshot(query(ordersCol, orderBy("createdAt", "desc")), (snap) => {
             const tempOrders = [];
             const incomingIds = [];
@@ -647,12 +645,10 @@
                 incomingIds.push(d.id);
             });
 
-            // Wenn es sich nicht um den ersten Ladevorgang handelt, prüfen wir auf Differenzen
             if (!firstLoad) {
                 incomingIds.forEach(id => {
                     if (!knownKeys.has(id)) {
                         hasNewOrders = true;
-                        // Prüfen, ob der neue Datensatz eilt/dringlich ist
                         const matched = tempOrders.find(o => o.id === id);
                         if (matched && matched.dringlich) {
                             hasNewUrgent = true;
@@ -660,7 +656,6 @@
                     }
                 });
 
-                // Priorisierung der Signaltöne
                 if (hasNewUrgent) {
                     playUrgentSound();
                 } else if (hasNewOrders) {
@@ -668,10 +663,7 @@
                 }
             }
 
-            // Set mit bekannten IDs befüllen / aktualisieren
             incomingIds.forEach(id => knownKeys.add(id));
-            
-            // Schutz vor Sound-Flut aufheben
             firstLoad = false;
 
             orders = tempOrders;
@@ -703,7 +695,6 @@
         });
 
         document.getElementById('voice-active').addEventListener('change', (e) => { voiceSettings.active = e.target.checked; saveV(); });
-        document.getElementById('voice-gender').addEventListener('change', (e) => { voiceSettings.name = e.target.value; saveV(); speakNatural("KI-Stimme aktiviert.", true); });
         document.getElementById('voice-reverb').addEventListener('input', (e) => { voiceSettings.reverb = e.target.value; updateReverbBuffer(); saveV(); });
         document.getElementById('voice-interval').addEventListener('change', (e) => { voiceSettings.interval = e.target.value; saveV(); });
         function saveV() { localStorage.setItem('voice_v5', JSON.stringify(voiceSettings)); }
