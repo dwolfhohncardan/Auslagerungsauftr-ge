@@ -55,8 +55,8 @@
                     <i data-lucide="radio" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <h1 class="font-black text-lg tracking-tight uppercase">IntraLog Neural</h1>
-                    <p class="text-[10px] text-emerald-500 font-mono font-bold uppercase tracking-widest">Acoustic Engine v2.1</p>
+                    <h1 class="font-black text-lg tracking-tight uppercase">Auslagerungsaufträge</h1>
+                    <p id="header-date" class="text-[10px] text-emerald-500 font-mono font-bold uppercase tracking-widest">00. Januar 2000</p>
                 </div>
             </div>
 
@@ -180,6 +180,25 @@
 
     <div id="toast-container" class="fixed bottom-8 right-8 z-[100] space-y-2"></div>
 
+    <!-- PASSWORT MODAL (BEDIENERZUGANG) -->
+    <div id="password-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+        <div class="bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-[32px] p-6 shadow-2xl max-w-sm w-full mx-4 space-y-4">
+            <div class="flex items-center space-x-3 text-brand-600 dark:text-brand-500">
+                <i data-lucide="lock" class="w-6 h-6"></i>
+                <h3 class="text-sm font-black uppercase tracking-wider">Bediener-Zugang</h3>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-zinc-400">Dieser Bereich ist geschützt. Bitte geben Sie das Autorisierungs-Passwort ein.</p>
+            <div class="space-y-2">
+                <input type="password" id="operator-password-input" placeholder="••••••••" class="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-brand-500 text-slate-900 dark:text-zinc-100">
+                <p id="password-error" class="text-[10px] font-bold text-red-500 hidden uppercase tracking-wider">Falsches Passwort!</p>
+            </div>
+            <div class="flex space-x-3">
+                <button onclick="cancelPasswordEntry()" class="flex-1 py-3 bg-slate-100 dark:bg-zinc-900 hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-bold rounded-xl text-xs uppercase tracking-wider transition-all">Abbrechen</button>
+                <button onclick="submitPasswordEntry()" class="flex-1 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg">Freischalten</button>
+            </div>
+        </div>
+    </div>
+
     <!-- SCHWEBENDES LAYOUT-ANPASSUNGSPANEL (DRAWER) -->
     <div id="layout-config-panel" class="fixed right-6 bottom-24 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-3xl p-6 shadow-2xl z-50 w-80 hidden transition-all">
         <div class="flex items-center justify-between border-b border-slate-100 dark:border-zinc-900 pb-3 mb-4">
@@ -232,6 +251,15 @@
                     <span id="scale-tablet-font-val" class="text-xs font-mono font-bold w-12 text-right text-slate-900 dark:text-zinc-100">100%</span>
                 </div>
             </div>
+            
+            <!-- Vollbild-Schalter (Nur bei Tablet-Ansicht sichtbar) -->
+            <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-zinc-900">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Vollbildmodus</span>
+                <button onclick="toggleFullscreen()" id="btn-fullscreen" class="p-2.5 bg-slate-100 dark:bg-zinc-900 hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 border border-slate-200 dark:border-zinc-800 rounded-xl transition-all" title="Vollbild umschalten">
+                    <i data-lucide="maximize" class="w-4 h-4 block" id="icon-fullscreen-max"></i>
+                    <i data-lucide="minimize" class="w-4 h-4 hidden" id="icon-fullscreen-min"></i>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -277,6 +305,10 @@
             tabletHeight: 160,
             tabletFont: 100
         };
+
+        // Bedienerbereich Schutzstatus
+        let isOperatorUnlocked = false;
+        let previousView = 'tv'; // Falls der Login abgebrochen wird, fallen wir standardmäßig auf den TV-Monitor zurück
 
         // --- THEME ENGINE (HELL / DUNKEL-MODUS) ---
         window.toggleTheme = () => {
@@ -488,6 +520,73 @@
         document.getElementById('scale-tablet-height').addEventListener('input', (e) => { layoutSettings.tabletHeight = parseInt(e.target.value); saveLayout(); });
         document.getElementById('scale-tablet-font').addEventListener('input', (e) => { layoutSettings.tabletFont = parseInt(e.target.value); saveLayout(); });
 
+        // --- VOLLBILD ENGINE ---
+        window.toggleFullscreen = () => {
+            const maxIcon = document.getElementById('icon-fullscreen-max');
+            const minIcon = document.getElementById('icon-fullscreen-min');
+            
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen()
+                    .then(() => {
+                        maxIcon.classList.add('hidden');
+                        minIcon.classList.remove('hidden');
+                    })
+                    .catch((err) => {
+                        console.error("Vollbildmodus konnte nicht aktiviert werden:", err);
+                    });
+            } else {
+                document.exitFullscreen()
+                    .then(() => {
+                        maxIcon.classList.remove('hidden');
+                        minIcon.classList.add('hidden');
+                    })
+                    .catch((err) => {
+                        console.error("Vollbildmodus konnte nicht beendet werden:", err);
+                    });
+            }
+        };
+
+        // Synchronisiere Icons, falls der Vollbildmodus per Hardwaretaste oder Geste beendet wird
+        document.addEventListener('fullscreenchange', () => {
+            const maxIcon = document.getElementById('icon-fullscreen-max');
+            const minIcon = document.getElementById('icon-fullscreen-min');
+            if (document.fullscreenElement) {
+                maxIcon.classList.add('hidden');
+                minIcon.classList.remove('hidden');
+            } else {
+                maxIcon.classList.remove('hidden');
+                minIcon.classList.add('hidden');
+            }
+        });
+
+        // --- PASSWORD ENGINE (BEDIENERZUGANG) ---
+        window.cancelPasswordEntry = () => {
+            document.getElementById('password-modal').classList.add('hidden');
+            // Leite auf die vorherige sichere Ansicht zurück
+            setViewMode(previousView);
+        };
+
+        window.submitPasswordEntry = () => {
+            const input = document.getElementById('operator-password-input');
+            const err = document.getElementById('password-error');
+            if (input.value === 'Gelenkwelle') {
+                isOperatorUnlocked = true;
+                document.getElementById('password-modal').classList.add('hidden');
+                setViewMode('operator');
+            } else {
+                err.classList.remove('hidden');
+                input.value = '';
+                input.focus();
+            }
+        };
+
+        // Enter-Taste im Passwortfeld binden
+        document.getElementById('operator-password-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                submitPasswordEntry();
+            }
+        });
+
         // --- UI ACTIONS ---
         window.runAcousticTest = () => {
             const btn = document.getElementById('btn-voice-test');
@@ -496,7 +595,21 @@
         };
 
         window.setViewMode = (mode) => {
+            // Passwortschutz für Bediener abfragen
+            if (mode === 'operator' && !isOperatorUnlocked) {
+                document.getElementById('password-modal').classList.remove('hidden');
+                document.getElementById('operator-password-input').value = '';
+                document.getElementById('password-error').classList.add('hidden');
+                document.getElementById('operator-password-input').focus();
+                lucide.createIcons();
+                return; // Wechsel abbrechen, bis Passwortprüfung erfolgreich
+            }
+
             view = mode;
+            if (mode !== 'operator') {
+                previousView = mode; // Merke letzte offene Ansicht, um im Fall eines Abbruchs dorthin zu springen
+            }
+
             document.querySelectorAll('main').forEach(m => m.classList.add('hidden'));
             document.getElementById(`view-${mode}`).classList.remove('hidden');
             document.querySelectorAll('nav button').forEach(b => {
@@ -758,7 +871,13 @@
 
         applyLayoutSettings();
         initTime();
-        setViewMode('operator');
+        
+        // Dynamisches Datum im Header initialisieren (e.g. 29. Mai 2026)
+        const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+        document.getElementById('header-date').textContent = new Date().toLocaleDateString('de-DE', dateOptions);
+        
+        // Initialer Start auf die TV-Halle setzen, da der Bediener nun passwortgeschützt ist
+        setViewMode('tv');
     </script>
 </body>
 </html>
