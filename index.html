@@ -84,15 +84,43 @@
                 <div class="bg-white dark:bg-zinc-950 p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm transition-colors duration-200">
                     <h2 class="text-[10px] font-black uppercase tracking-widest mb-6 text-brand-500">Auftragserfassung</h2>
                     <form id="auftrag-form" class="space-y-4">
-                        <input type="text" id="artikelnummer" required placeholder="Artikelnummer" class="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-brand-500 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500">
-                        <div class="grid grid-cols-2 gap-3">
-                            <input type="text" id="lagerort" required placeholder="VON" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold uppercase text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500">
-                            <input type="text" id="zielort" required placeholder="NACH" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold uppercase text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500">
+                        
+                        <!-- Artikelnummer & Menge (platzsparend nebeneinander) -->
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="col-span-2">
+                                <input type="text" id="artikelnummer" required placeholder="Artikelnummer" class="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-brand-500 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500">
+                            </div>
+                            <div>
+                                <input type="number" id="menge" required min="1" value="1" placeholder="Menge" class="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-brand-500 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500" title="Menge">
+                            </div>
                         </div>
+
+                        <!-- Bemerkungs-Eingabefeld (optional) [1] -->
+                        <input type="text" id="bemerkung" placeholder="Bemerkung (optional)" class="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-brand-500 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500">
+                        
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="time" id="uhrzeit" required class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold text-slate-900 dark:text-zinc-100">
+                            <div>
+                                <input type="text" id="lagerort" required placeholder="VON" class="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold uppercase text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500">
+                                <!-- Keine klick-Vorschläge mehr beim Ursprungslagerort (VON) [1] -->
+                            </div>
+                            <div>
+                                <input type="text" id="zielort" required placeholder="NACH" class="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold uppercase text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500">
+                                <!-- Quick Select NACH -->
+                                <div class="flex gap-1 mt-1 flex-wrap">
+                                    <button type="button" onclick="setQuickLocation('zielort', 'GANG 1')" class="text-[8px] bg-slate-100 dark:bg-zinc-900 px-1.5 py-0.5 rounded font-bold text-slate-500 hover:bg-slate-200 dark:hover:bg-zinc-800">GANG 1</button>
+                                    <button type="button" onclick="setQuickLocation('zielort', 'GANG 2')" class="text-[8px] bg-slate-100 dark:bg-zinc-900 px-1.5 py-0.5 rounded font-bold text-slate-500 hover:bg-slate-200 dark:hover:bg-zinc-800">GANG 2</button>
+                                    <button type="button" onclick="setQuickLocation('zielort', 'GANG 3')" class="text-[8px] bg-slate-100 dark:bg-zinc-900 px-1.5 py-0.5 rounded font-bold text-slate-500 hover:bg-slate-200 dark:hover:bg-zinc-800">GANG 3</button>
+                                    <button type="button" onclick="setQuickLocation('zielort', 'MITTELGANG')" class="text-[8px] bg-slate-100 dark:bg-zinc-900 px-1.5 py-0.5 rounded font-bold text-slate-500 hover:bg-slate-200 dark:hover:bg-zinc-800">MITTELGANG</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="time" id="uhrzeit" required oninput="calculateShiftFromTime(this.value)" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold text-slate-900 dark:text-zinc-100">
                             <select id="schicht" class="px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold text-slate-900 dark:text-zinc-100">
-                                <option>Frühschicht</option><option>Spätschicht</option><option>Nachtschicht</option>
+                                <option value="Frühschicht">Frühschicht</option>
+                                <option value="Spätschicht">Spätschicht</option>
+                                <option value="Nachtschicht">Nachtschicht</option>
                             </select>
                         </div>
                         
@@ -108,7 +136,11 @@
                             </div>
                         </div>
 
-                        <button type="submit" id="btn-submit" class="w-full py-4 bg-brand-600 text-white font-black rounded-xl hover:bg-brand-700 transition-all uppercase text-[10px] tracking-widest shadow-lg">Auftrag Senden</button>
+                        <!-- Sende- und Abbrech-Buttons (Dynamisch bei Bearbeitung) -->
+                        <div class="flex gap-2" id="submit-buttons-container">
+                            <button type="submit" id="btn-submit" class="w-full py-4 bg-brand-600 text-white font-black rounded-xl hover:bg-brand-700 transition-all uppercase text-[10px] tracking-widest shadow-lg">Auftrag Senden</button>
+                            <button type="button" id="btn-cancel-edit" onclick="cancelEdit()" class="hidden px-4 py-4 bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-black rounded-xl hover:bg-slate-300 dark:hover:bg-zinc-700 transition-all uppercase text-[10px] tracking-widest">Abbrechen</button>
+                        </div>
                     </form>
                 </div>
 
@@ -156,7 +188,7 @@
         </div>
     </main>
 
-    <!-- TV MONITOR (SCHWEBENDE WIDGETS - OPTION 3) -->
+    <!-- TV MONITOR -->
     <main id="view-tv" class="hidden flex-grow p-4 relative flex flex-col overflow-hidden">
         
         <!-- Schwebendes Widget Links: KPIs & Morgen-Indikator -->
@@ -173,7 +205,7 @@
                     <span class="text-[8px] text-red-500 uppercase tracking-widest mr-1.5 font-bold animate-pulse">ÜBERFÄLLIG</span>
                     <span id="tv-kpi-error" class="text-xs text-red-500 font-mono animate-pulse">0</span>
                 </div>
-                <!-- Trenner & Indikator für Morgen-Aufträge (dynamisch gesteuert) -->
+                <!-- Trenner & Indikator für Morgen-Aufträge -->
                 <div id="tv-kpi-tomorrow-divider" class="hidden h-3 w-[1px] bg-slate-200 dark:bg-zinc-800"></div>
                 <div id="tv-tomorrow-indicator" class="hidden items-center text-blue-500 animate-pulse">
                     <span class="text-[8px] uppercase tracking-widest font-black flex items-center gap-1">
@@ -195,8 +227,6 @@
             <div id="tv-clock" class="text-sm font-mono font-black tracking-tight text-slate-800 dark:text-zinc-100">00:00:00</div>
         </div>
 
-        <!-- Auftragsliste füllt den Bildschirm voll aus. 
-             pt-14 sorgt dafür, dass die ersten Elemente im Ruhezustand unterhalb der Widgets beginnen. -->
         <div id="tv-grid" class="grid flex-grow auto-rows-max overflow-y-auto pt-14 pb-4"></div>
     </main>
 
@@ -283,7 +313,7 @@
                 </div>
             </div>
             
-            <!-- Vollbild-Schalter (Nur bei Tablet-Ansicht sichtbar) -->
+            <!-- Vollbild-Schalter -->
             <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-zinc-900">
                 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Vollbildmodus</span>
                 <button onclick="toggleFullscreen()" id="btn-fullscreen" class="p-2.5 bg-slate-100 dark:bg-zinc-900 hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 border border-slate-200 dark:border-zinc-800 rounded-xl transition-all" title="Vollbild umschalten">
@@ -301,7 +331,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, updateDoc, doc, onSnapshot, query, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDmwKHhJ6df7yOoR_LPUvc5PD6-Shvs9t8",
@@ -318,6 +348,7 @@
         let orders = [];
         let view = 'operator';
         let archiveDate = new Date().toISOString().split('T')[0];
+        let editingOrderId = null; // State Variable für die Bearbeitung [1]
         
         let voiceSettings = JSON.parse(localStorage.getItem('voice_v5')) || { active: true, interval: 30, reverb: 40 };
         
@@ -339,9 +370,9 @@
 
         // Bedienerbereich Schutzstatus
         let isOperatorUnlocked = false;
-        let previousView = 'tv'; // Falls der Login abgebrochen wird, fallen wir standardmäßig auf den TV-Monitor zurück
+        let previousView = 'tv';
 
-        // --- THEME ENGINE (HELL / DUNKEL-MODUS) ---
+        // --- THEME ENGINE ---
         window.toggleTheme = () => {
             const html = document.documentElement;
             if (html.classList.contains('dark')) {
@@ -354,13 +385,13 @@
             lucide.createIcons();
         };
 
-        // --- ACOUSTIC WARNTON ENGINE (AGRESSIVER DURCHDRINGENDER CHIME) ---
+        // --- ACOUSTIC WARNTON ENGINE ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
         // Filter Chain
         const bandpass = audioCtx.createBiquadFilter();
         bandpass.type = "bandpass";
-        bandpass.frequency.value = 1200; // Telefon/Intercom-Klang
+        bandpass.frequency.value = 1200;
         
         const reverbNode = audioCtx.createConvolver();
         function updateReverbBuffer() {
@@ -380,7 +411,6 @@
         bandpass.connect(reverbNode);
         reverbNode.connect(audioCtx.destination);
 
-        // Industrieller, durchdringender Doppel-Gong (Oszillator-Typ 'triangle' & Peak Gain '0.6' für maximale Durchdringung im Lager)
         function playWarningChime(isTest = false) {
             if(!voiceSettings.active && !isTest) return;
 
@@ -396,20 +426,20 @@
             osc1.type = 'triangle';
             osc1.frequency.setValueAtTime(783.99, now);
             gain1.gain.setValueAtTime(0.001, now);
-            gain1.gain.exponentialRampToValueAtTime(0.6, now + 0.05); // Deutlich lauter (0.6 statt 0.12)
+            gain1.gain.exponentialRampToValueAtTime(0.6, now + 0.05);
             gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
             osc1.connect(gain1);
             gain1.connect(bandpass);
             osc1.start(now);
             osc1.stop(now + 0.6);
 
-            // Zweiter Ton: C6 (1046.50 Hz) - dezent zeitversetzt, sehr durchdringend
+            // Zweiter Ton: C6 (1046.50 Hz)
             const osc2 = audioCtx.createOscillator();
             const gain2 = audioCtx.createGain();
             osc2.type = 'triangle';
             osc2.frequency.setValueAtTime(1046.50, now + 0.2);
             gain2.gain.setValueAtTime(0.001, now);
-            gain2.gain.exponentialRampToValueAtTime(0.6, now + 0.25); // Deutlich lauter (0.6 statt 0.12)
+            gain2.gain.exponentialRampToValueAtTime(0.6, now + 0.25);
             gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
             osc2.connect(gain2);
             gain2.connect(bandpass);
@@ -424,11 +454,9 @@
             }
         }
 
-        // --- SYNTHETISCHE AUDIO-BENACHRICHTIGUNGEN (WEB AUDIO API) ---
-        
+        // --- SYNTHETISCHE AUDIO-BENACHRICHTIGUNGEN ---
         let audioUnlocked = false;
 
-        // Komponente 1: Browser-Sicherheitsbarriere umgehen (Audio Unlock)
         function unlockAudio() {
             if (audioUnlocked) return;
 
@@ -453,11 +481,9 @@
         document.body.addEventListener('click', unlockAudio);
         document.body.addEventListener('touchstart', unlockAudio);
 
-        // Komponente 2: Erkennungs- und Filterlogik für neue Datensätze
         let knownKeys = new Set();
         let firstLoad = true;
 
-        // Komponente 4: Synthetische Klangerzeugung (Web Audio API)
         const playNewOrderSound = () => {
             if (audioCtx.state === 'suspended') audioCtx.resume();
 
@@ -479,7 +505,6 @@
         };
         window.playNewOrderSound = playNewOrderSound;
 
-        // Dringender Sound: Rhythmisches Warnsignal (Erhöhte Grundlautstärke auf 0.5)
         const playUrgentSound = () => {
             if (audioCtx.state === 'suspended') audioCtx.resume();
 
@@ -510,7 +535,79 @@
         };
         window.playUrgentSound = playUrgentSound;
 
-        // --- LAYOUT ENGINE (RESPONSIVITÄT & DISPLAY-KALIBRIERUNG) ---
+        // --- SCHNELLAUSWAHL & SCHICHTAUTOMATIK ---
+        window.setQuickLocation = (fieldId, value) => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.value = value;
+            }
+        };
+
+        window.calculateShiftFromTime = (timeString) => {
+            if (!timeString) return;
+            const hour = parseInt(timeString.split(':')[0], 10);
+            const shiftSelect = document.getElementById('schicht');
+            if (hour >= 6 && hour < 14) {
+                shiftSelect.value = "Frühschicht";
+            } else if (hour >= 14 && hour < 22) {
+                shiftSelect.value = "Spätschicht";
+            } else {
+                shiftSelect.value = "Nachtschicht";
+            }
+        };
+
+        // --- EDITIER-FUNKTIONALITÄT ---
+        window.startEditOrder = (id) => {
+            const order = orders.find(o => o.id === id);
+            if (!order) return;
+            
+            editingOrderId = id;
+            
+            // Werte in Formular laden [1]
+            document.getElementById('artikelnummer').value = order.artikelnummer;
+            document.getElementById('menge').value = order.menge || 1;
+            document.getElementById('bemerkung').value = order.bemerkung || ''; // Bemerkung laden [1]
+            document.getElementById('lagerort').value = order.lagerort;
+            document.getElementById('zielort').value = order.zielort;
+            document.getElementById('uhrzeit').value = order.uhrzeit;
+            document.getElementById('schicht').value = order.schicht;
+            document.getElementById('dringlich').checked = order.dringlich || false;
+            document.getElementById('fuer-morgen').checked = order.fuerMorgen || false;
+            
+            // Buttons visuell umschalten
+            document.getElementById('btn-submit').textContent = "Änderungen Speichern";
+            document.getElementById('btn-cancel-edit').classList.remove('hidden');
+            
+            // Fokus-Wechsel & weiches Scrollen nach oben zum Eingabebereich
+            document.getElementById('view-operator').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        window.cancelEdit = () => {
+            editingOrderId = null;
+            document.getElementById('auftrag-form').reset();
+            initTime();
+            document.getElementById('btn-submit').textContent = "Auftrag Senden";
+            document.getElementById('btn-cancel-edit').classList.add('hidden');
+        };
+
+        // --- LÖSCH- UND STORNOFUNKTION ---
+        window.deleteOrder = async (id) => {
+            if (confirm("Möchten Sie diesen Auftrag wirklich unwiderruflich löschen/stornieren?")) {
+                const ref = doc(db, "orders", id);
+                try {
+                    // Falls der gerade editierte Auftrag gelöscht wird, Bearbeitungsmodus verlassen [1]
+                    if (editingOrderId === id) {
+                        cancelEdit();
+                    }
+                    await deleteDoc(ref);
+                } catch (err) {
+                    console.error("Löschen fehlgeschlagen:", err);
+                    alert("Fehler beim Löschen des Auftrags.");
+                }
+            }
+        };
+
+        // --- LAYOUT ENGINE ---
         function applyLayoutSettings() {
             const root = document.documentElement;
             root.style.setProperty('--tv-card-height', `${layoutSettings.tvHeight}px`);
@@ -578,7 +675,6 @@
             }
         };
 
-        // Synchronisiere Icons, falls der Vollbildmodus per Hardwaretaste oder Geste beendet wird
         document.addEventListener('fullscreenchange', () => {
             const maxIcon = document.getElementById('icon-fullscreen-max');
             const minIcon = document.getElementById('icon-fullscreen-min');
@@ -594,7 +690,6 @@
         // --- PASSWORD ENGINE (BEDIENERZUGANG) ---
         window.cancelPasswordEntry = () => {
             document.getElementById('password-modal').classList.add('hidden');
-            // Leite auf die vorherige sichere Ansicht zurück
             setViewMode(previousView);
         };
 
@@ -612,7 +707,6 @@
             }
         };
 
-        // Enter-Taste im Passwortfeld binden
         document.getElementById('operator-password-input').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 submitPasswordEntry();
@@ -627,19 +721,18 @@
         };
 
         window.setViewMode = (mode) => {
-            // Passwortschutz für Bediener abfragen
             if (mode === 'operator' && !isOperatorUnlocked) {
                 document.getElementById('password-modal').classList.remove('hidden');
                 document.getElementById('operator-password-input').value = '';
                 document.getElementById('password-error').classList.add('hidden');
                 document.getElementById('operator-password-input').focus();
                 lucide.createIcons();
-                return; // Wechsel abbrechen, bis Passwortprüfung erfolgreich
+                return;
             }
 
             view = mode;
             if (mode !== 'operator') {
-                previousView = mode; // Merke letzte offene Ansicht, um im Fall eines Abbruchs dorthin zu springen
+                previousView = mode;
             }
 
             document.querySelectorAll('main').forEach(m => m.classList.add('hidden'));
@@ -666,17 +759,15 @@
 
         window.cycleStatus = async (id, cur) => {
             const ref = doc(db, "orders", id);
-            // Störungs-Status entfernt: Wechselt nun ausschließlich zwischen 0 (Offen) und 1 (Erledigt)
             let next = cur === 0 ? { status: 1, finishedAt: Timestamp.now() } : { status: 0, finishedAt: null };
             await updateDoc(ref, next);
         };
 
-        // --- ZEITPRÜFUNG WARNTON (SEKUNDENGENAU ENTKOPPELT) ---
+        // --- ZEITPRÜFUNG WARNTON ---
         function checkOverdueWarning() {
             const now = new Date();
             const nowMin = now.getHours() * 60 + now.getMinutes();
             
-            // Morgen-Aufträge dürfen keinen heutigen Warnton triggern
             const active = orders.filter(o => o.status !== 1 && !o.fuerMorgen);
             const overdue = active.filter(o => o.status === 0 && ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin);
             
@@ -691,14 +782,12 @@
             const now = new Date();
             const nowMin = now.getHours() * 60 + now.getMinutes();
             
-            // TV-Halle: Nur aktive Aufträge von HEUTE (Morgen-Aufträge fliegen raus und werden separat als Widget-Indikator dargestellt)
             const activeToday = orders.filter(o => o.status !== 1 && !o.fuerMorgen).sort((a,b) => {
                 const minA = (a.uhrzeit.split(':')[0]*60) + (a.uhrzeit.split(':')[1]*1);
                 const minB = (b.uhrzeit.split(':')[0]*60) + (b.uhrzeit.split(':')[1]*1);
                 return minA - minB;
             });
 
-            // Operator: Alle aktiven Aufträge, aber Morgen-Aufträge sauber nach hinten sortiert
             const activeOperator = orders.filter(o => o.status !== 1).sort((a,b) => {
                 const scoreA = a.fuerMorgen ? 1 : 0;
                 const scoreB = b.fuerMorgen ? 1 : 0;
@@ -711,7 +800,6 @@
 
             const archived = orders.filter(o => o.status === 1 && o.finishedAt?.toDate().toISOString().split('T')[0] === archiveDate);
 
-            // Tablet-spezifische Liste: Erledigte rutschen nach unten, Morgen-Aufträge ebenfalls nach hinten
             const tabletOrders = [...orders].sort((a, b) => {
                 const scoreA = a.status === 0 ? 0 : 1;
                 const scoreB = b.status === 0 ? 0 : 1;
@@ -730,7 +818,6 @@
             if(view === 'tv') renderTV(activeToday, nowMin);
             if(view === 'tablet') renderTablet(tabletOrders);
 
-            // Dynamische KPI-Berechnung für den TV-Monitor
             if(document.getElementById('tv-kpi-open') && document.getElementById('tv-kpi-error')) {
                 const lateCount = activeToday.filter(o => o.status === 0 && ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin).length;
                 const openCount = activeToday.filter(o => o.status === 0 && ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) >= nowMin).length;
@@ -739,7 +826,6 @@
                 document.getElementById('tv-kpi-error').textContent = lateCount; 
             }
 
-            // Indikator-Logik für Morgen-Planungen im schwebenden Widget
             const hasTomorrowOrders = orders.some(o => o.status === 0 && o.fuerMorgen === true);
             const tomIndicator = document.getElementById('tv-tomorrow-indicator');
             const tomDivider = document.getElementById('tv-kpi-tomorrow-divider');
@@ -763,27 +849,43 @@
                 const isLate = !o.fuerMorgen && (((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin);
                 const urgentBadge = o.dringlich ? `<span class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-black bg-red-600 text-white animate-pulse">EILT</span>` : '';
                 const tomorrowBadge = o.fuerMorgen ? `<span class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-black bg-blue-600 dark:bg-blue-500/80 text-white">📅 MORGEN</span>` : '';
+                const mengeBadge = o.menge ? `<span class="ml-1.5 px-1.5 py-0.5 bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 text-[10px] font-bold rounded">${o.menge}x</span>` : '';
                 
-                // Überfällige heute rot einfärben, morgen-Aufträge dezent blau markieren
                 const rowBg = isLate 
                     ? 'bg-red-50/50 dark:bg-red-900/10' 
                     : (o.fuerMorgen ? 'bg-blue-50/20 dark:bg-blue-900/5' : '');
 
                 return `
                 <tr class="hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors ${rowBg}">
-                    <td class="px-6 py-4 font-black text-sm flex items-center">${esc(o.artikelnummer)}${urgentBadge}${tomorrowBadge}</td>
+                    <td class="px-6 py-4 font-black text-sm flex flex-col justify-center">
+                        <div class="flex items-center">${esc(o.artikelnummer)}${mengeBadge}${urgentBadge}${tomorrowBadge}</div>
+                        <!-- Bemerkung platzsparend unter der Artikelnummer [1] -->
+                        ${o.bemerkung ? `<span class="text-[10px] text-slate-400 dark:text-zinc-500 font-normal mt-0.5">💬 ${esc(o.bemerkung)}</span>` : ''}
+                    </td>
                     <td class="px-6 py-4 font-bold text-[10px] uppercase">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</td>
                     <td class="px-6 py-4 font-mono text-sm ${isLate ? 'text-red-500 font-bold' : ''}">${o.uhrzeit} ${o.fuerMorgen ? '<span class="text-[9px] text-blue-500 block font-bold uppercase">Morgen</span>' : ''}</td>
-                    <td class="px-6 py-4 text-right">
-                        <button onclick="cycleStatus('${o.id}', ${o.status})" class="p-2 bg-slate-100 dark:bg-zinc-800 rounded-lg hover:bg-emerald-500 hover:text-white transition-all"><i data-lucide="check" class="w-4 h-4"></i></button>
+                    <td class="px-6 py-4 text-right flex justify-end gap-2">
+                        <!-- Erledigen -->
+                        <button onclick="cycleStatus('${o.id}', ${o.status})" class="p-2 bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 rounded-lg hover:bg-emerald-500 hover:text-white transition-all" title="Als erledigt markieren"><i data-lucide="check" class="w-4 h-4"></i></button>
+                        <!-- Bearbeiten -->
+                        <button onclick="startEditOrder('${o.id}')" class="p-2 bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 rounded-lg hover:bg-brand-500 hover:text-white transition-all" title="Auftrag bearbeiten"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                        <!-- Löschen/Stornieren -->
+                        <button onclick="deleteOrder('${o.id}')" class="p-2 bg-slate-100 dark:bg-zinc-800 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all" title="Auftrag stornieren"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </td>
                 </tr>`;
             }).join('');
+
             document.getElementById('table-archive').innerHTML = archived.map(o => `
                 <tr class="opacity-30">
-                    <td class="px-6 py-2 font-bold">${esc(o.artikelnummer)}</td>
+                    <td class="px-6 py-2 font-bold flex flex-col justify-center">
+                        <div>${esc(o.artikelnummer)} ${o.menge ? `<span class="text-[9px] font-bold text-slate-400">(${o.menge}x)</span>` : ''}</div>
+                        ${o.bemerkung ? `<span class="text-[9px] text-slate-400 dark:text-zinc-500 font-normal mt-0.5">💬 ${esc(o.bemerkung)}</span>` : ''}
+                    </td>
                     <td class="px-6 py-2 uppercase text-[9px] font-bold">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</td>
-                    <td class="px-6 py-2 text-right"><button onclick="cycleStatus('${o.id}', 1)" class="hover:text-emerald-500"><i data-lucide="rotate-ccw" class="w-3 h-3"></i></button></td>
+                    <td class="px-6 py-2 text-right flex justify-end gap-2">
+                        <button onclick="cycleStatus('${o.id}', 1)" class="hover:text-emerald-500" title="Wiederherstellen"><i data-lucide="rotate-ccw" class="w-3 h-3"></i></button>
+                        <button onclick="deleteOrder('${o.id}')" class="hover:text-red-500" title="Endgültig löschen"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                    </td>
                 </tr>`).join('');
         }
 
@@ -791,8 +893,8 @@
             document.getElementById('tv-grid').innerHTML = active.map(o => {
                 const isLate = ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin;
                 const urgentBadge = o.dringlich ? `<span class="px-3 py-1 bg-red-600 text-white text-xs font-black rounded-lg animate-pulse mr-4">EILT</span>` : '';
-                
-                // Überfällige Zeilen erhalten die intensiv rot pulsierende Visualisierung
+                const mengeBadge = o.menge ? `<span class="px-2.5 py-0.5 bg-brand-500/10 dark:bg-brand-500/25 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-2xl font-black rounded-xl mr-3 inline-flex items-center">${o.menge}x</span>` : '';
+
                 const cardStyle = isLate 
                     ? 'border-red-500 glow-error bg-red-50/70 dark:bg-zinc-950' 
                     : o.dringlich ? 'border-red-700/60' : 'border-slate-200 dark:border-zinc-900';
@@ -803,7 +905,11 @@
                 <div class="tv-card-row flex items-center border-4 rounded-[25px] overflow-hidden bg-white dark:bg-zinc-950 pr-10 shadow-lg mb-4 ${cardStyle}" style="height: var(--tv-card-height) !important;">
                     <div class="w-4 h-full ${barColor}"></div>
                     <div class="flex-grow flex items-center justify-between pl-10 font-black" style="font-size: calc(1rem * var(--tv-font-scale));">
-                        <div class="text-[2.25em] font-mono flex items-center">${urgentBadge}${esc(o.artikelnummer)}</div>
+                        <!-- Artikelnummer und Bemerkung sauber untereinander, ohne das Layout zu sprengen [1] -->
+                        <div class="text-[2.25em] font-mono flex flex-col justify-center leading-none">
+                            <div class="flex items-center">${urgentBadge}${mengeBadge}${esc(o.artikelnummer)}</div>
+                            ${o.bemerkung ? `<div class="text-[0.35em] text-slate-400 dark:text-zinc-500 font-sans font-bold uppercase tracking-wide mt-1.5">${esc(o.bemerkung)}</div>` : ''}
+                        </div>
                         <div class="flex items-center gap-6 text-[1.5em] uppercase"><span class="text-slate-400">${esc(o.lagerort)}</span><i data-lucide="radio" class="w-[1.25em] h-[1.25em] text-emerald-500"></i><span>${esc(o.zielort)}</span></div>
                         <div class="text-right text-[2.25em] font-mono ${isLate ? 'text-red-500' : ''}">${o.uhrzeit}</div>
                     </div>
@@ -848,8 +954,13 @@
                     </div>
                     
                     <div class="text-center flex-grow px-3 font-black">
-                        <p class="text-[1.20em] uppercase tracking-tighter leading-none ${isCompleted ? 'line-through text-slate-400 dark:text-zinc-500' : ''}">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</p>
+                        <p class="text-[1.20em] uppercase tracking-tighter leading-none ${isCompleted ? 'line-through text-slate-400 dark:text-zinc-500' : ''}">
+                            ${esc(o.lagerort)} ➔ ${esc(o.zielort)}
+                            ${o.menge ? `<span class="text-xs bg-slate-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded ml-1 font-bold">${o.menge}x</span>` : ''}
+                        </p>
                         <p class="text-[0.70em] text-slate-400 mt-2 uppercase font-bold tracking-widest leading-none">${o.uhrzeit} ${o.fuerMorgen ? 'UHR (MORGEN)' : 'UHR'}</p>
+                        <!-- Bemerkung auf dem Tablet (Dezent abgetrennt) [1] -->
+                        ${o.bemerkung ? `<p class="text-[0.65em] text-slate-500 dark:text-zinc-400 mt-2 font-bold italic leading-tight border-t border-slate-100 dark:border-zinc-900 pt-1 text-center truncate-none">💬 ${esc(o.bemerkung)}</p>` : ''}
                     </div>
 
                     <div class="shrink-0 flex items-center justify-center pr-1">
@@ -880,11 +991,13 @@
         // --- CORE FUNCTIONS ---
         function initTime() {
             const n = new Date();
-            document.getElementById('uhrzeit').value = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+            const timeVal = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+            document.getElementById('uhrzeit').value = timeVal;
             document.getElementById('archive-date-filter').value = archiveDate;
+            calculateShiftFromTime(timeVal);
         }
 
-        // Firestore Event-Schleife mit integrierter Echtzeit-Datenprüflogik
+        // Firestore Realtime-Verbindung
         onSnapshot(query(ordersCol, orderBy("createdAt", "desc")), (snap) => {
             const tempOrders = [];
             const incomingIds = [];
@@ -922,27 +1035,43 @@
             render();
         });
 
+        // Formular absenden (Erstellen oder Aktualisieren) [1]
         document.getElementById('auftrag-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-submit');
             btn.disabled = true;
+
+            const payload = {
+                artikelnummer: document.getElementById('artikelnummer').value.trim(),
+                menge: parseInt(document.getElementById('menge').value, 10) || 1,
+                bemerkung: document.getElementById('bemerkung').value.trim(), // Bemerkung im Payload abspeichern [1]
+                lagerort: document.getElementById('lagerort').value.trim().toUpperCase(),
+                zielort: document.getElementById('zielort').value.trim().toUpperCase(),
+                uhrzeit: document.getElementById('uhrzeit').value,
+                schicht: document.getElementById('schicht').value,
+                dringlich: document.getElementById('dringlich').checked,
+                fuerMorgen: document.getElementById('fuer-morgen').checked
+            };
+
             try {
-                await addDoc(ordersCol, {
-                    artikelnummer: document.getElementById('artikelnummer').value.trim(),
-                    lagerort: document.getElementById('lagerort').value.trim().toUpperCase(),
-                    zielort: document.getElementById('zielort').value.trim().toUpperCase(),
-                    uhrzeit: document.getElementById('uhrzeit').value,
-                    schicht: document.getElementById('schicht').value,
-                    dringlich: document.getElementById('dringlich').checked,
-                    fuerMorgen: document.getElementById('fuer-morgen').checked,
-                    status: 0, 
-                    createdAt: Timestamp.now()
-                });
-                e.target.reset(); 
-                initTime();
+                if (editingOrderId) {
+                    // Aktualisieren des bestehenden Dokuments
+                    const ref = doc(db, "orders", editingOrderId);
+                    await updateDoc(ref, payload);
+                    cancelEdit(); // Reset und Modus verlassen
+                } else {
+                    // Neues Dokument anlegen
+                    await addDoc(ordersCol, {
+                        ...payload,
+                        status: 0, 
+                        createdAt: Timestamp.now()
+                    });
+                    e.target.reset(); 
+                    initTime();
+                }
             } catch (err) { 
                 console.error(err);
-                alert("Senden fehlgeschlagen!"); 
+                alert("Operation fehlgeschlagen!"); 
             }
             btn.disabled = false;
         });
@@ -961,28 +1090,24 @@
         }
 
         setInterval(() => {
-            const now = new Date();
-            const t = now.toLocaleTimeString('de-DE');
+            const n = new Date();
+            const t = n.toLocaleTimeString('de-DE');
             ['live-clock-operator', 'tv-clock', '.tablet-clock'].forEach(s => {
                 const el = s.startsWith('.') ? document.querySelector(s) : document.getElementById(s);
                 if(el) el.textContent = t;
             });
             
-            // Unabhängige, sekundengenaue Prüfung für den periodischen Warnton
             checkOverdueWarning();
 
-            // Render weiterhin 1x pro Minute triggern, um relative Zeitprüfungen zu aktualisieren
-            if(now.getSeconds() === 0) render();
+            if(n.getSeconds() === 0) render();
         }, 1000);
 
         applyLayoutSettings();
         initTime();
         
-        // Dynamisches Datum im Header initialisieren
         const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' };
         document.getElementById('header-date').textContent = new Date().toLocaleDateString('de-DE', dateOptions);
         
-        // Initialer Start auf die TV-Halle setzen, da der Bediener nun passwortgeschützt ist
         setViewMode('tv');
     </script>
 </body>
