@@ -33,6 +33,7 @@
         :root {
             --tv-card-height: 85px;
             --tv-font-scale: 1.0;
+            --tv-qty-font-scale: 1.0;
             --tablet-cols: 2;
             --tablet-card-height: 160px;
             --tablet-font-scale: 1.0;
@@ -95,13 +96,12 @@
                             </div>
                         </div>
 
-                        <!-- Bemerkungs-Eingabefeld (optional) [1] -->
+                        <!-- Bemerkungs-Eingabefeld (optional) -->
                         <input type="text" id="bemerkung" placeholder="Bemerkung (optional)" class="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-brand-500 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500">
                         
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <input type="text" id="lagerort" required placeholder="VON" class="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold uppercase text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500">
-                                <!-- Keine klick-Vorschläge mehr beim Ursprungslagerort (VON) [1] -->
                             </div>
                             <div>
                                 <input type="text" id="zielort" required placeholder="NACH" class="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm font-bold uppercase text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500">
@@ -287,6 +287,13 @@
                     <span id="scale-tv-font-val" class="text-xs font-mono font-bold w-12 text-right text-slate-900 dark:text-zinc-100">100%</span>
                 </div>
             </div>
+            <div>
+                <label class="text-[9px] font-black text-slate-400 block mb-1">SCHRIFTGRÖSSE STÜCKZAHL (TV)</label>
+                <div class="flex items-center gap-3">
+                    <input type="range" id="scale-tv-qty-font" min="30" max="250" value="100" class="w-full accent-brand-500">
+                    <span id="scale-tv-qty-font-val" class="text-xs font-mono font-bold w-12 text-right text-slate-900 dark:text-zinc-100">100%</span>
+                </div>
+            </div>
         </div>
 
         <!-- Controls für Tablet-Ansicht -->
@@ -348,7 +355,7 @@
         let orders = [];
         let view = 'operator';
         let archiveDate = new Date().toISOString().split('T')[0];
-        let editingOrderId = null; // State Variable für die Bearbeitung [1]
+        let editingOrderId = null; // State Variable für die Bearbeitung
         
         let voiceSettings = JSON.parse(localStorage.getItem('voice_v5')) || { active: true, interval: 30, reverb: 40 };
         
@@ -363,10 +370,14 @@
         let layoutSettings = JSON.parse(localStorage.getItem('layout_settings')) || {
             tvHeight: 85,
             tvFont: 100,
+            tvQtyFont: 100,
             tabletCols: 2,
             tabletHeight: 160,
             tabletFont: 100
         };
+        if (layoutSettings.tvQtyFont === undefined) {
+            layoutSettings.tvQtyFont = 100;
+        }
 
         // Bedienerbereich Schutzstatus
         let isOperatorUnlocked = false;
@@ -563,10 +574,10 @@
             
             editingOrderId = id;
             
-            // Werte in Formular laden [1]
+            // Werte in Formular laden
             document.getElementById('artikelnummer').value = order.artikelnummer;
             document.getElementById('menge').value = order.menge || 1;
-            document.getElementById('bemerkung').value = order.bemerkung || ''; // Bemerkung laden [1]
+            document.getElementById('bemerkung').value = order.bemerkung || ''; // Bemerkung laden
             document.getElementById('lagerort').value = order.lagerort;
             document.getElementById('zielort').value = order.zielort;
             document.getElementById('uhrzeit').value = order.uhrzeit;
@@ -595,7 +606,7 @@
             if (confirm("Möchten Sie diesen Auftrag wirklich unwiderruflich löschen/stornieren?")) {
                 const ref = doc(db, "orders", id);
                 try {
-                    // Falls der gerade editierte Auftrag gelöscht wird, Bearbeitungsmodus verlassen [1]
+                    // Falls der gerade editierte Auftrag gelöscht wird, Bearbeitungsmodus verlassen
                     if (editingOrderId === id) {
                         cancelEdit();
                     }
@@ -612,6 +623,7 @@
             const root = document.documentElement;
             root.style.setProperty('--tv-card-height', `${layoutSettings.tvHeight}px`);
             root.style.setProperty('--tv-font-scale', layoutSettings.tvFont / 100);
+            root.style.setProperty('--tv-qty-font-scale', layoutSettings.tvQtyFont / 100);
             root.style.setProperty('--tablet-cols', layoutSettings.tabletCols);
             root.style.setProperty('--tablet-card-height', `${layoutSettings.tabletHeight}px`);
             root.style.setProperty('--tablet-font-scale', layoutSettings.tabletFont / 100);
@@ -620,6 +632,9 @@
             document.getElementById('scale-tv-height-val').textContent = `${layoutSettings.tvHeight}px`;
             document.getElementById('scale-tv-font').value = layoutSettings.tvFont;
             document.getElementById('scale-tv-font-val').textContent = `${layoutSettings.tvFont}%`;
+            
+            document.getElementById('scale-tv-qty-font').value = layoutSettings.tvQtyFont;
+            document.getElementById('scale-tv-qty-font-val').textContent = `${layoutSettings.tvQtyFont}%`;
 
             document.getElementById('scale-tablet-cols').value = layoutSettings.tabletCols;
             document.getElementById('scale-tablet-cols-val').textContent = `${layoutSettings.tabletCols} Sp.`;
@@ -645,6 +660,7 @@
         // Regler Event Listener
         document.getElementById('scale-tv-height').addEventListener('input', (e) => { layoutSettings.tvHeight = parseInt(e.target.value); saveLayout(); });
         document.getElementById('scale-tv-font').addEventListener('input', (e) => { layoutSettings.tvFont = parseInt(e.target.value); saveLayout(); });
+        document.getElementById('scale-tv-qty-font').addEventListener('input', (e) => { layoutSettings.tvQtyFont = parseInt(e.target.value); saveLayout(); });
         document.getElementById('scale-tablet-cols').addEventListener('input', (e) => { layoutSettings.tabletCols = parseInt(e.target.value); saveLayout(); });
         document.getElementById('scale-tablet-height').addEventListener('input', (e) => { layoutSettings.tabletHeight = parseInt(e.target.value); saveLayout(); });
         document.getElementById('scale-tablet-font').addEventListener('input', (e) => { layoutSettings.tabletFont = parseInt(e.target.value); saveLayout(); });
@@ -859,7 +875,7 @@
                 <tr class="hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors ${rowBg}">
                     <td class="px-6 py-4 font-black text-sm flex flex-col justify-center">
                         <div class="flex items-center">${esc(o.artikelnummer)}${mengeBadge}${urgentBadge}${tomorrowBadge}</div>
-                        <!-- Bemerkung platzsparend unter der Artikelnummer [1] -->
+                        <!-- Bemerkung platzsparend unter der Artikelnummer -->
                         ${o.bemerkung ? `<span class="text-[10px] text-slate-400 dark:text-zinc-500 font-normal mt-0.5">💬 ${esc(o.bemerkung)}</span>` : ''}
                     </td>
                     <td class="px-6 py-4 font-bold text-[10px] uppercase">${esc(o.lagerort)} ➔ ${esc(o.zielort)}</td>
@@ -893,7 +909,7 @@
             document.getElementById('tv-grid').innerHTML = active.map(o => {
                 const isLate = ((o.uhrzeit.split(':')[0]*60) + (o.uhrzeit.split(':')[1]*1)) < nowMin;
                 const urgentBadge = o.dringlich ? `<span class="px-3 py-1 bg-red-600 text-white text-xs font-black rounded-lg animate-pulse mr-4">EILT</span>` : '';
-                const mengeBadge = o.menge ? `<span class="px-2.5 py-0.5 bg-brand-500/10 dark:bg-brand-500/25 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-2xl font-black rounded-xl mr-3 inline-flex items-center">${o.menge}x</span>` : '';
+                const mengeBadge = o.menge ? `<span class="px-2.5 py-0.5 bg-brand-500/10 dark:bg-brand-500/25 border border-brand-500/20 text-brand-600 dark:text-brand-400 font-black rounded-xl ml-3 inline-flex items-center" style="font-size: calc(1.5rem * var(--tv-qty-font-scale, 1));">${o.menge}x</span>` : '';
 
                 const cardStyle = isLate 
                     ? 'border-red-500 glow-error bg-red-50/70 dark:bg-zinc-950' 
@@ -905,9 +921,9 @@
                 <div class="tv-card-row flex items-center border-4 rounded-[25px] overflow-hidden bg-white dark:bg-zinc-950 pr-10 shadow-lg mb-4 ${cardStyle}" style="height: var(--tv-card-height) !important;">
                     <div class="w-4 h-full ${barColor}"></div>
                     <div class="flex-grow flex items-center justify-between pl-10 font-black" style="font-size: calc(1rem * var(--tv-font-scale));">
-                        <!-- Artikelnummer und Bemerkung sauber untereinander, ohne das Layout zu sprengen [1] -->
+                        <!-- Artikelnummer und Bemerkung sauber untereinander, ohne das Layout zu sprengen -->
                         <div class="text-[2.25em] font-mono flex flex-col justify-center leading-none">
-                            <div class="flex items-center">${urgentBadge}${mengeBadge}${esc(o.artikelnummer)}</div>
+                            <div class="flex items-center">${urgentBadge}${esc(o.artikelnummer)}${mengeBadge}</div>
                             ${o.bemerkung ? `<div class="text-[0.35em] text-slate-400 dark:text-zinc-500 font-sans font-bold uppercase tracking-wide mt-1.5">${esc(o.bemerkung)}</div>` : ''}
                         </div>
                         <div class="flex items-center gap-6 text-[1.5em] uppercase"><span class="text-slate-400">${esc(o.lagerort)}</span><i data-lucide="radio" class="w-[1.25em] h-[1.25em] text-emerald-500"></i><span>${esc(o.zielort)}</span></div>
@@ -959,7 +975,7 @@
                             ${o.menge ? `<span class="text-xs bg-slate-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded ml-1 font-bold">${o.menge}x</span>` : ''}
                         </p>
                         <p class="text-[0.70em] text-slate-400 mt-2 uppercase font-bold tracking-widest leading-none">${o.uhrzeit} ${o.fuerMorgen ? 'UHR (MORGEN)' : 'UHR'}</p>
-                        <!-- Bemerkung auf dem Tablet (Dezent abgetrennt) [1] -->
+                        <!-- Bemerkung auf dem Tablet (Dezent abgetrennt) -->
                         ${o.bemerkung ? `<p class="text-[0.65em] text-slate-500 dark:text-zinc-400 mt-2 font-bold italic leading-tight border-t border-slate-100 dark:border-zinc-900 pt-1 text-center truncate-none">💬 ${esc(o.bemerkung)}</p>` : ''}
                     </div>
 
@@ -1035,7 +1051,7 @@
             render();
         });
 
-        // Formular absenden (Erstellen oder Aktualisieren) [1]
+        // Formular absenden (Erstellen oder Aktualisieren)
         document.getElementById('auftrag-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-submit');
@@ -1044,7 +1060,7 @@
             const payload = {
                 artikelnummer: document.getElementById('artikelnummer').value.trim(),
                 menge: parseInt(document.getElementById('menge').value, 10) || 1,
-                bemerkung: document.getElementById('bemerkung').value.trim(), // Bemerkung im Payload abspeichern [1]
+                bemerkung: document.getElementById('bemerkung').value.trim(), // Bemerkung im Payload abspeichern
                 lagerort: document.getElementById('lagerort').value.trim().toUpperCase(),
                 zielort: document.getElementById('zielort').value.trim().toUpperCase(),
                 uhrzeit: document.getElementById('uhrzeit').value,
