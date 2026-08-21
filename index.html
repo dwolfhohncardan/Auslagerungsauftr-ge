@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="de" class="dark">
 <head>
@@ -169,7 +170,15 @@
                 <div class="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden transition-colors duration-200">
                     <div class="px-6 py-4 border-b border-slate-200 dark:border-zinc-800 flex justify-between items-center bg-slate-50/50 dark:bg-zinc-900/50 transition-colors duration-200">
                         <h2 class="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-slate-500"><i data-lucide="layout-list" class="w-3 h-3"></i> Warteschlange</h2>
-                        <div id="live-clock-operator" class="text-xs font-mono font-bold text-brand-500 uppercase tracking-tighter">00:00:00</div>
+                        <div class="flex items-center space-x-3">
+                            <!-- Lautlos-Modus: unterdrückt den Warnton bei überfälligen Aufträgen nur für diesen Bediener-Arbeitsplatz -->
+                            <button id="btn-lautlos-toggle" onclick="toggleLautlosModus()" type="button" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all" title="Lautlos-Modus umschalten (unterdrückt den Warnton bei überfälligen Aufträgen)">
+                                <i data-lucide="volume-2" class="w-3.5 h-3.5 block text-emerald-500" id="icon-lautlos-off"></i>
+                                <i data-lucide="volume-x" class="w-3.5 h-3.5 hidden text-red-500" id="icon-lautlos-on"></i>
+                                <span id="lautlos-label" class="text-[8px] font-black uppercase tracking-wider text-emerald-500">Ton An</span>
+                            </button>
+                            <div id="live-clock-operator" class="text-xs font-mono font-bold text-brand-500 uppercase tracking-tighter">00:00:00</div>
+                        </div>
                     </div>
                     <table class="w-full text-left">
                         <tbody id="table-active" class="divide-y divide-slate-100 dark:divide-zinc-900"></tbody>
@@ -488,6 +497,10 @@
         if (layoutSettings.tvQtyFont === undefined) {
             layoutSettings.tvQtyFont = 100;
         }
+
+        // Lautlos-Modus (pro Bediener-Arbeitsplatz, lokal auf diesem Gerät gespeichert):
+        // unterdrückt ausschließlich den automatischen Warnton bei überfälligen Aufträgen
+        let operatorLautlos = JSON.parse(localStorage.getItem('operator_lautlos_v1')) || false;
 
         // Bedienerbereich Schutzstatus
         let isOperatorUnlocked = false;
@@ -910,8 +923,42 @@
             await updateDoc(ref, next);
         };
 
+        // --- LAUTLOS-MODUS (BEDIENER) ---
+        // Schaltet den Lautlos-Modus für diesen Bediener-Arbeitsplatz um. Betrifft ausschließlich
+        // den automatischen Warnton bei überfälligen Aufträgen (checkOverdueWarning) - der manuelle
+        // "Check"-Ton im TV-Modus bleibt davon unberührt, damit die Anlage jederzeit testbar bleibt.
+        window.toggleLautlosModus = () => {
+            operatorLautlos = !operatorLautlos;
+            localStorage.setItem('operator_lautlos_v1', JSON.stringify(operatorLautlos));
+            updateLautlosUI();
+        };
+
+        function updateLautlosUI() {
+            const btn = document.getElementById('btn-lautlos-toggle');
+            const iconOff = document.getElementById('icon-lautlos-off');
+            const iconOn = document.getElementById('icon-lautlos-on');
+            const label = document.getElementById('lautlos-label');
+            if (!btn || !iconOff || !iconOn || !label) return;
+
+            if (operatorLautlos) {
+                btn.className = "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all border border-red-500/40 dark:border-red-500/30 bg-red-500/10";
+                iconOff.classList.add('hidden');
+                iconOn.classList.remove('hidden');
+                label.className = "text-[8px] font-black uppercase tracking-wider text-red-500";
+                label.textContent = "Lautlos";
+            } else {
+                btn.className = "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all border border-emerald-500/30 dark:border-emerald-500/20 hover:border-emerald-500 hover:bg-emerald-500/5";
+                iconOff.classList.remove('hidden');
+                iconOn.classList.add('hidden');
+                label.className = "text-[8px] font-black uppercase tracking-wider text-emerald-500";
+                label.textContent = "Ton An";
+            }
+        }
+
         // --- ZEITPRÜFUNG WARNTON ---
         function checkOverdueWarning() {
+            if (operatorLautlos) return; // Lautlos-Modus aktiv: Warnton für diesen Bediener unterdrückt
+
             const now = new Date();
             const nowMin = now.getHours() * 60 + now.getMinutes();
             
@@ -1467,6 +1514,7 @@
 
         applyLayoutSettings();
         initTime();
+        updateLautlosUI();
         
         const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' };
         document.getElementById('header-date').textContent = new Date().toLocaleDateString('de-DE', dateOptions);
